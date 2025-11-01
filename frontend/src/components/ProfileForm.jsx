@@ -46,6 +46,7 @@ const ProfileForm = () => {
       // Prepare profile data for backend API
       const profileData = {
         name: formData.name,
+        email: user.email, // Include email from auth
         favorite_ice_cream: formData.favoriteIceCream,
         spirit_animal: formData.spirit_animal,
         personality_type: formData.personality_type,

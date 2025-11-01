@@ -102,13 +102,19 @@ export default function Profile() {
         return
       }
 
+      // Include user email in profile data
+      const profileData = {
+        ...profile,
+        email: user.email
+      }
+
       // Update profile via backend API
       const response = await fetch(`http://localhost:3000/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(profileData)
       })
 
       const data = await response.json()
