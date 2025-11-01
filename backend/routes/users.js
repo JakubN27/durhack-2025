@@ -46,6 +46,27 @@ usersRouter.get('/:userId', async (req, res) => {
       .eq('id', userId)
       .single()
 
+    // If user doesn't exist (PGRST116), return empty profile structure
+    if (error && error.code === 'PGRST116') {
+      return res.json({
+        success: true,
+        data: {
+          id: userId,
+          name: '',
+          bio: '',
+          email: '',
+          teach_skills: [],
+          learn_skills: [],
+          favorite_ice_cream: '',
+          spirit_animal: '',
+          personality_type: 'introvert',
+          daily_rhythm: 'early_bird',
+          personal_color: '',
+          avatar_url: null
+        }
+      })
+    }
+
     if (error) throw error
 
     if (!data) {
@@ -54,7 +75,7 @@ usersRouter.get('/:userId', async (req, res) => {
 
     res.json({
       success: true,
-      user: data
+      data: data
     })
   } catch (error) {
     console.error('Get user error:', error)
@@ -63,24 +84,28 @@ usersRouter.get('/:userId', async (req, res) => {
 })
 
 /**
- * PUT /api/users/:userId
- * Update user profile
+ * POST /api/users
+ * Create a new user profile
  */
-usersRouter.put('/:userId', async (req, res) => {
+usersRouter.post('/', async (req, res) => {
   try {
-    const { userId } = req.params
-    const { name, bio, teach_skills, learn_skills } = req.body
+    const { id, email, name, bio, avatar_url } = req.body
 
-    const updateData = {}
-    if (name !== undefined) updateData.name = name
-    if (bio !== undefined) updateData.bio = bio
-    if (teach_skills !== undefined) updateData.teach_skills = teach_skills
-    if (learn_skills !== undefined) updateData.learn_skills = learn_skills
+    if (!id || !email) {
+      return res.status(400).json({ error: 'User ID and email are required' })
+    }
 
     const { data, error } = await supabase
       .from('users')
-      .update(updateData)
-      .eq('id', userId)
+      .insert({
+        id,
+        email,
+        name: name || email.split('@')[0],
+        bio: bio || '',
+        avatar_url: avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || email)}&size=200`,
+        teach_skills: [],
+        learn_skills: []
+      })
       .select()
       .single()
 
@@ -88,7 +113,61 @@ usersRouter.put('/:userId', async (req, res) => {
 
     res.json({
       success: true,
-      user: data
+      data: data
+    })
+  } catch (error) {
+    console.error('Create user error:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+/**
+ * PUT /api/users/:userId
+ * Update user profile (or create if doesn't exist)
+ */
+usersRouter.put('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { 
+      name, 
+      bio, 
+      email,
+      teach_skills, 
+      learn_skills,
+      favorite_ice_cream,
+      spirit_animal,
+      personality_type,
+      daily_rhythm,
+      personal_color,
+      avatar_url
+    } = req.body
+
+    // Build update data object
+    const updateData = { id: userId }
+    if (name !== undefined) updateData.name = name
+    if (bio !== undefined) updateData.bio = bio
+    if (email !== undefined) updateData.email = email
+    if (teach_skills !== undefined) updateData.teach_skills = teach_skills
+    if (learn_skills !== undefined) updateData.learn_skills = learn_skills
+    if (favorite_ice_cream !== undefined) updateData.favorite_ice_cream = favorite_ice_cream
+    if (spirit_animal !== undefined) updateData.spirit_animal = spirit_animal
+    if (personality_type !== undefined) updateData.personality_type = personality_type
+    if (daily_rhythm !== undefined) updateData.daily_rhythm = daily_rhythm
+    if (personal_color !== undefined) updateData.personal_color = personal_color
+    if (avatar_url !== undefined) updateData.avatar_url = avatar_url
+
+    // Use upsert to create or update
+    const { data, error } = await supabase
+      .from('users')
+      .upsert(updateData, { onConflict: 'id' })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      data: data
     })
   } catch (error) {
     console.error('Update user error:', error)
@@ -132,7 +211,7 @@ usersRouter.post('/:userId/extract-skills', async (req, res) => {
 
     res.json({
       success: true,
-      user: data,
+      data: data,
       extracted_skills: {
         teach: skills.teach_skills,
         learn: skills.learn_skills
