@@ -1,6 +1,15 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
+import { supabase } from '../lib/supabase'
+
+const profileTips = [
+  'Mention recent projects so the AI can surface mentors in the same lane.',
+  'List specific topics you enjoy teaching - people love clarity.',
+  'Be honest about your learning edges. Reciprocal matches rely on it.',
+]
+
+const categories = ['Programming', 'Frontend', 'Backend', 'Mobile', 'AI', 'Design', 'DevOps', 'Database', 'Cloud', 'Other']
+const proficiencies = ['beginner', 'intermediate', 'advanced', 'expert']
 
 export default function Profile() {
   const [loading, setLoading] = useState(true)
@@ -14,13 +23,18 @@ export default function Profile() {
     spirit_animal: '',
     personality_type: 'introvert',
     daily_rhythm: 'early_bird',
-    personal_color: ''
+    personal_color: '',
   })
-  const [newTeachSkill, setNewTeachSkill] = useState({ name: '', category: 'Programming', proficiency: 'beginner' })
-  const [newLearnSkill, setNewLearnSkill] = useState({ name: '', category: 'Programming', proficiency: 'beginner' })
-
-  const categories = ['Programming', 'Frontend', 'Backend', 'Mobile', 'AI', 'Design', 'DevOps', 'Database', 'Cloud', 'Other']
-  const proficiencies = ['beginner', 'intermediate', 'advanced', 'expert']
+  const [newTeachSkill, setNewTeachSkill] = useState({
+    name: '',
+    category: categories[0],
+    proficiency: proficiencies[0],
+  })
+  const [newLearnSkill, setNewLearnSkill] = useState({
+    name: '',
+    category: categories[0],
+    proficiency: proficiencies[0],
+  })
 
   useEffect(() => {
     getProfile()
@@ -29,25 +43,32 @@ export default function Profile() {
   const getProfile = async () => {
     try {
       setLoading(true)
-      
-      // Get current user from Supabase auth
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         toast.error('Not authenticated')
         return
       }
 
-      // Fetch profile from backend API
       const response = await fetch(`http://localhost:3000/api/users/${user.id}`)
       const result = await response.json()
 
       if (result.success && result.data) {
-        setProfile(result.data)
-      } else {
-        throw new Error(result.error || 'Failed to load profile')
+        setProfile((prev) => ({
+          ...prev,
+          ...result.data,
+          teach_skills: result.data.teach_skills || [],
+          learn_skills: result.data.learn_skills || [],
+          favorite_ice_cream: result.data.favorite_ice_cream || '',
+          spirit_animal: result.data.spirit_animal || '',
+          personality_type: result.data.personality_type || 'introvert',
+          daily_rhythm: result.data.daily_rhythm || 'early_bird',
+          personal_color: result.data.personal_color || '',
+        }))
+      } else if (result.error) {
+        throw new Error(result.error)
       }
     } catch (error) {
-      console.error('Error loading profile:', error.message)
+      console.error('Error loading profile:', error)
       toast.error('Failed to load profile')
     } finally {
       setLoading(false)
@@ -60,9 +81,11 @@ export default function Profile() {
       return
     }
 
-    const updatedSkills = [...(profile.teach_skills || []), newTeachSkill]
-    setProfile({ ...profile, teach_skills: updatedSkills })
-    setNewTeachSkill({ name: '', category: 'Programming', proficiency: 'beginner' })
+    setProfile((prev) => ({
+      ...prev,
+      teach_skills: [...(prev.teach_skills || []), newTeachSkill],
+    }))
+    setNewTeachSkill({ name: '', category: categories[0], proficiency: proficiencies[0] })
     toast.success('Skill added! Remember to save your profile.')
   }
 
@@ -72,55 +95,61 @@ export default function Profile() {
       return
     }
 
-    const updatedSkills = [...(profile.learn_skills || []), newLearnSkill]
-    setProfile({ ...profile, learn_skills: updatedSkills })
-    setNewLearnSkill({ name: '', category: 'Programming', proficiency: 'beginner' })
+    setProfile((prev) => ({
+      ...prev,
+      learn_skills: [...(prev.learn_skills || []), newLearnSkill],
+    }))
+    setNewLearnSkill({ name: '', category: categories[0], proficiency: proficiencies[0] })
     toast.success('Skill added! Remember to save your profile.')
   }
 
   const handleRemoveTeachSkill = (index) => {
-    const updatedSkills = profile.teach_skills.filter((_, idx) => idx !== index)
-    setProfile({ ...profile, teach_skills: updatedSkills })
+    setProfile((prev) => ({
+      ...prev,
+      teach_skills: prev.teach_skills.filter((_, idx) => idx !== index),
+    }))
     toast.success('Skill removed! Remember to save your profile.')
   }
 
   const handleRemoveLearnSkill = (index) => {
-    const updatedSkills = profile.learn_skills.filter((_, idx) => idx !== index)
-    setProfile({ ...profile, learn_skills: updatedSkills })
+    setProfile((prev) => ({
+      ...prev,
+      learn_skills: prev.learn_skills.filter((_, idx) => idx !== index),
+    }))
     toast.success('Skill removed! Remember to save your profile.')
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setSaving(true)
 
     try {
-      // Get current user from Supabase auth
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         toast.error('Not authenticated')
         return
       }
 
-      // Include user email in profile data
       const profileData = {
         ...profile,
-        email: user.email
+        email: user.email,
+        teach_skills: profile.teach_skills || [],
+        learn_skills: profile.learn_skills || [],
       }
 
-      // Update profile via backend API
       const response = await fetch(`http://localhost:3000/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(profileData)
+        body: JSON.stringify(profileData),
       })
 
       const data = await response.json()
 
       if (data.success) {
         toast.success('Profile updated successfully!')
+        await getProfile()
       } else {
         throw new Error(data.error || 'Failed to update profile')
       }
@@ -132,311 +161,343 @@ export default function Profile() {
     }
   }
 
+  const profileCompletion = useMemo(() => {
+    const fields = [profile.name, profile.bio, profile.teach_skills?.length, profile.learn_skills?.length]
+    const completed = fields.filter((field) => {
+      if (Array.isArray(field)) return field > 0
+      return Boolean(field)
+    }).length
+    return Math.min(100, 40 + completed * 15)
+  }, [profile])
+
   if (loading && !profile.name) {
-    return <div className="max-w-4xl mx-auto px-4 py-8">Loading...</div>
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center text-white/70">
+        Loading profile...
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">Your Profile</h1>
-      <p className="text-gray-600 mb-8">Tell us about your skills and what you want to learn</p>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Info */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                className="input"
-                value={profile.name}
-                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                required
-              />
+    <div className="px-4 py-10 text-white">
+      <div className="mx-auto max-w-5xl space-y-10">
+        <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-primary-950 via-primary-900 to-primary-700 p-10 text-white shadow-xl">
+          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-sm uppercase tracking-[0.35em] text-white/70">Profile hub</p>
+              <h1 className="mt-4 text-4xl font-semibold md:text-5xl">
+                Craft {profile.name ? `${profile.name}'s` : 'your'} SkillSwap identity
+              </h1>
+              <p className="mt-6 text-white/80">
+                Share what lights you up, highlight your strengths, and tell the AI what you want to learn next.
+                The richer your story, the sharper your matches.
+              </p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bio
-              </label>
-              <textarea
-                className="input"
-                rows="4"
-                value={profile.bio}
-                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                placeholder="Tell us about yourself, your interests, and your experience..."
-                required
-              />
+            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+              <p className="text-sm text-white/80">Profile completeness</p>
+              <p className="mt-2 text-4xl font-semibold">{profileCompletion}%</p>
+              <div className="mt-4 h-2 rounded-full bg-white/20">
+                <div className="h-2 rounded-full bg-white" style={{ width: `${profileCompletion}%` }} />
+              </div>
+              <p className="mt-4 text-xs uppercase tracking-wide text-white/70">
+                Tip: Add more detail to your bio for sharper AI skill extraction.
+              </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Fun About You Section */}
-        <div className="card bg-gradient-to-br from-purple-50 to-pink-50">
-          <h2 className="text-xl font-semibold mb-4">✨ Get to Know You</h2>
-          <p className="text-sm text-gray-600 mb-4">Help us match you with compatible learning partners!</p>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  🍦 Favorite Ice Cream
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  value={profile.favorite_ice_cream || ''}
-                  onChange={(e) => setProfile({ ...profile, favorite_ice_cream: e.target.value })}
-                  placeholder="Mint chocolate chip, vanilla..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  🦁 Spirit Animal
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  value={profile.spirit_animal || ''}
-                  onChange={(e) => setProfile({ ...profile, spirit_animal: e.target.value })}
-                  placeholder="Lion, owl, dolphin..."
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                🎨 If you were a color, what would you be?
-              </label>
-              <input
-                type="text"
-                className="input"
-                value={profile.personal_color || ''}
-                onChange={(e) => setProfile({ ...profile, personal_color: e.target.value })}
-                placeholder="Blue, sunset orange, forest green..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  👥 Personality Type
-                </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="personality_type"
-                      value="introvert"
-                      checked={profile.personality_type === 'introvert'}
-                      onChange={(e) => setProfile({ ...profile, personality_type: e.target.value })}
-                      className="mr-2"
-                    />
-                    <span>🤫 Introvert</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="personality_type"
-                      value="extrovert"
-                      checked={profile.personality_type === 'extrovert'}
-                      onChange={(e) => setProfile({ ...profile, personality_type: e.target.value })}
-                      className="mr-2"
-                    />
-                    <span>🎉 Extrovert</span>
-                  </label>
+        <form onSubmit={handleSubmit} className="space-y-10">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <div className="card space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold text-slate-900">Your story</h2>
+                  <p className="mt-1 text-sm text-slate-500">What should the community know about you?</p>
                 </div>
+                <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase text-primary-600">
+                  AI powered
+                </span>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ⏰ Daily Rhythm
-                </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="daily_rhythm"
-                      value="early_bird"
-                      checked={profile.daily_rhythm === 'early_bird'}
-                      onChange={(e) => setProfile({ ...profile, daily_rhythm: e.target.value })}
-                      className="mr-2"
-                    />
-                    <span>🌅 Early Bird</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="daily_rhythm"
-                      value="night_owl"
-                      checked={profile.daily_rhythm === 'night_owl'}
-                      onChange={(e) => setProfile({ ...profile, daily_rhythm: e.target.value })}
-                      className="mr-2"
-                    />
-                    <span>🦉 Night Owl</span>
-                  </label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={profile.name}
+                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                    placeholder="How should others call you?"
+                    required
+                  />
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Skills You Can Teach */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">🎓 Skills You Can Teach</h2>
-          
-          <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-              <input
-                type="text"
-                placeholder="Skill name (e.g., React)"
-                className="input"
-                value={newTeachSkill.name}
-                onChange={(e) => setNewTeachSkill({ ...newTeachSkill, name: e.target.value })}
-              />
-              <select
-                className="input"
-                value={newTeachSkill.category}
-                onChange={(e) => setNewTeachSkill({ ...newTeachSkill, category: e.target.value })}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-              <select
-                className="input"
-                value={newTeachSkill.proficiency}
-                onChange={(e) => setNewTeachSkill({ ...newTeachSkill, proficiency: e.target.value })}
-              >
-                {proficiencies.map(prof => (
-                  <option key={prof} value={prof}>{prof}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleAddTeachSkill}
-                className="btn-primary"
-              >
-                + Add
-              </button>
-            </div>
-          </div>
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-medium text-slate-700">Bio</label>
+                  <textarea
+                    className="input min-h-[140px]"
+                    value={profile.bio || ''}
+                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                    placeholder="Share your background, what you love teaching, and what you are eager to learn."
+                    required
+                  />
+                  <p className="mt-2 text-xs text-slate-500">
+                    The AI reads this to extract skills and recommend brilliant matches.
+                  </p>
+                </div>
 
-          {profile.teach_skills?.length > 0 ? (
-            <div className="space-y-2">
-              {profile.teach_skills.map((skill, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <span className="font-semibold">{skill.name}</span>
-                    <span className="text-sm text-gray-600 ml-3">
-                      {skill.category} · {skill.proficiency}
-                    </span>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">🍦 Favourite ice cream</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={profile.favorite_ice_cream || ''}
+                    onChange={(e) => setProfile({ ...profile, favorite_ice_cream: e.target.value })}
+                    placeholder="Mint chocolate chip, vanilla..."
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">🦁 Spirit animal</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={profile.spirit_animal || ''}
+                    onChange={(e) => setProfile({ ...profile, spirit_animal: e.target.value })}
+                    placeholder="Lion, owl, dolphin..."
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    🎨 If you were a colour, what would you be?
+                  </label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={profile.personal_color || ''}
+                    onChange={(e) => setProfile({ ...profile, personal_color: e.target.value })}
+                    placeholder="Deep forest green, sunrise orange..."
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700">👥 Personality type</label>
+                  <div className="flex gap-4">
+                    {['introvert', 'extrovert'].map((type) => (
+                      <label key={type} className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                        <input
+                          type="radio"
+                          name="personality_type"
+                          value={type}
+                          checked={profile.personality_type === type}
+                          onChange={(e) => setProfile({ ...profile, personality_type: e.target.value })}
+                        />
+                        {type === 'introvert' ? '🤫 Introvert' : '🎉 Extrovert'}
+                      </label>
+                    ))}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTeachSkill(idx)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
-                  >
-                    Remove
-                  </button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No skills added yet</p>
-          )}
-        </div>
 
-        {/* Skills You Want to Learn */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">🌱 Skills You Want to Learn</h2>
-          
-          <div className="mb-4 p-4 bg-green-50 rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-              <input
-                type="text"
-                placeholder="Skill name (e.g., Python)"
-                className="input"
-                value={newLearnSkill.name}
-                onChange={(e) => setNewLearnSkill({ ...newLearnSkill, name: e.target.value })}
-              />
-              <select
-                className="input"
-                value={newLearnSkill.category}
-                onChange={(e) => setNewLearnSkill({ ...newLearnSkill, category: e.target.value })}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-              <select
-                className="input"
-                value={newLearnSkill.proficiency}
-                onChange={(e) => setNewLearnSkill({ ...newLearnSkill, proficiency: e.target.value })}
-              >
-                {proficiencies.map(prof => (
-                  <option key={prof} value={prof}>{prof}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleAddLearnSkill}
-                className="btn-primary"
-              >
-                + Add
-              </button>
-            </div>
-          </div>
-
-          {profile.learn_skills?.length > 0 ? (
-            <div className="space-y-2">
-              {profile.learn_skills.map((skill, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <span className="font-semibold">{skill.name}</span>
-                    <span className="text-sm text-gray-600 ml-3">
-                      {skill.category} · {skill.proficiency}
-                    </span>
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700">⏰ Daily rhythm</label>
+                  <div className="flex gap-4">
+                    {['early_bird', 'night_owl'].map((rhythm) => (
+                      <label key={rhythm} className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                        <input
+                          type="radio"
+                          name="daily_rhythm"
+                          value={rhythm}
+                          checked={profile.daily_rhythm === rhythm}
+                          onChange={(e) => setProfile({ ...profile, daily_rhythm: e.target.value })}
+                        />
+                        {rhythm === 'early_bird' ? '🌅 Early bird' : '🦉 Night owl'}
+                      </label>
+                    ))}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveLearnSkill(idx)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
-                  >
-                    Remove
-                  </button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No skills added yet</p>
-          )}
-        </div>
+              </div>
 
-        {/* Save Button */}
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            className="btn-primary flex-1"
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : '💾 Save Profile'}
-          </button>
-          <button
-            type="button"
-            onClick={() => window.location.href = '/dashboard'}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-slate-500">
+                  Updated {profile.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'just now'}
+                </p>
+                <button type="submit" className="btn-primary sm:w-auto" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save profile'}
+                </button>
+              </div>
+            </div>
+
+            <aside className="card space-y-5">
+              <h2 className="text-xl font-semibold text-slate-900">Profile tips</h2>
+              <ul className="space-y-4 text-sm text-slate-600">
+                {profileTips.map((tip) => (
+                  <li key={tip}>- {tip}</li>
+                ))}
+              </ul>
+              <button type="button" className="btn-secondary w-full text-sm" onClick={() => toast('Preview coming soon!')}>
+                Preview public profile
+              </button>
+            </aside>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="card bg-gradient-to-br from-primary-50 to-white">
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Skills you can teach</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    These are how you light up the community. Add detail to attract the right learners.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-primary-100 bg-primary-50/50 p-4">
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <input
+                      type="text"
+                      placeholder="Skill name (e.g., React)"
+                      className="input"
+                      value={newTeachSkill.name}
+                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, name: e.target.value })}
+                    />
+                    <select
+                      className="input"
+                      value={newTeachSkill.category}
+                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, category: e.target.value })}
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="input"
+                      value={newTeachSkill.proficiency}
+                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, proficiency: e.target.value })}
+                    >
+                      {proficiencies.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="button" onClick={handleAddTeachSkill} className="btn-primary">
+                      + Add
+                    </button>
+                  </div>
+                </div>
+
+                {profile.teach_skills?.length ? (
+                  <div className="space-y-2">
+                    {profile.teach_skills.map((skill, idx) => (
+                      <div
+                        key={`${skill.name}-${idx}`}
+                        className="flex items-center justify-between rounded-2xl border border-primary-100 bg-white px-4 py-3 text-sm text-slate-700"
+                      >
+                        <div>
+                          <span className="font-semibold text-primary-700">{skill.name}</span>
+                          <span className="ml-3 text-xs uppercase tracking-wide text-primary-500">
+                            {skill.category} · {skill.proficiency}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTeachSkill(idx)}
+                          className="text-xs font-semibold text-primary-600 hover:text-primary-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-primary-200 bg-primary-50/40 p-6 text-sm text-primary-700">
+                    Share what you love teaching so the AI can spotlight your expertise.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="card bg-gradient-to-br from-white to-slate-50">
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Skills you want to learn</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Tell the AI what to prioritise next so it can source partners a few steps ahead.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <input
+                      type="text"
+                      placeholder="Skill name (e.g., Python)"
+                      className="input"
+                      value={newLearnSkill.name}
+                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, name: e.target.value })}
+                    />
+                    <select
+                      className="input"
+                      value={newLearnSkill.category}
+                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, category: e.target.value })}
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="input"
+                      value={newLearnSkill.proficiency}
+                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, proficiency: e.target.value })}
+                    >
+                      {proficiencies.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="button" onClick={handleAddLearnSkill} className="btn-primary">
+                      + Add
+                    </button>
+                  </div>
+                </div>
+
+                {profile.learn_skills?.length ? (
+                  <div className="space-y-2">
+                    {profile.learn_skills.map((skill, idx) => (
+                      <div
+                        key={`${skill.name}-${idx}`}
+                        className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700"
+                      >
+                        <div>
+                          <span className="font-semibold text-slate-800">{skill.name}</span>
+                          <span className="ml-3 text-xs uppercase tracking-wide text-slate-500">
+                            {skill.category} · {skill.proficiency}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLearnSkill(idx)}
+                          className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+                    Tell us what you are exploring next so we can introduce mentors who are a few steps ahead.
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </form>
+      </div>
     </div>
   )
 }

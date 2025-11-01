@@ -1,7 +1,48 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
+import { supabase } from '../lib/supabase'
+
+const quickActions = [
+  'Complete your learning goals',
+  'Check in with new matches',
+  'Update availability for next week',
+]
+
+const upcomingSessions = [
+  {
+    id: 1,
+    partner: 'Amelia Brown',
+    focus: 'UI Animation Deep Dive',
+    date: 'Today · 4:00 PM',
+    status: 'Confirmed',
+  },
+  {
+    id: 2,
+    partner: 'Devon Chen',
+    focus: 'React Performance Clinic',
+    date: 'Tomorrow · 11:30 AM',
+    status: 'Pending notes',
+  },
+]
+
+const progressUpdates = [
+  {
+    title: 'Skill Legacy Growth',
+    description: 'Your React expertise reached 8 mentees this month',
+    metric: '+42%',
+  },
+  {
+    title: 'AI Learning Plans',
+    description: '3 new personalised practice plans ready for review',
+    metric: 'New',
+  },
+  {
+    title: 'Community Streak',
+    description: 'You have helped peers for 6 days straight. Keep it up!',
+    metric: '🔥 6-day streak',
+  },
+]
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -17,13 +58,11 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Get current user from Supabase auth
       const { data: { user: authUser } } = await supabase.auth.getUser()
       setUser(authUser)
 
       if (!authUser) return
 
-      // Get user profile via backend API
       const profileResponse = await fetch(`http://localhost:3000/api/users/${authUser.id}`)
       const profileResult = await profileResponse.json()
 
@@ -31,10 +70,8 @@ export default function Dashboard() {
         setProfile(profileResult.data)
       }
 
-      // Get user matches via backend API
       const matchResponse = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
       const matchData = await matchResponse.json()
-      
       if (matchData.success) {
         setMatches(matchData.matches || [])
       }
@@ -78,144 +115,243 @@ export default function Dashboard() {
     }
   }
 
+  const activeMatches = useMemo(
+    () => matches.filter((m) => m.status === 'accepted').length,
+    [matches],
+  )
+  const totalSkillsTaught = profile?.teach_skills?.length || 0
+  const totalSkillsToLearn = profile?.learn_skills?.length || 0
+  const reciprocityScore = totalSkillsTaught + totalSkillsToLearn === 0
+    ? 0
+    : Math.min(
+        100,
+        Math.round(
+          (Math.min(totalSkillsTaught, totalSkillsToLearn) /
+            Math.max(totalSkillsTaught, totalSkillsToLearn || 1)) *
+            100,
+        ),
+      )
+
+  const dashboardStats = [
+    {
+      title: 'Active Matches',
+      value: activeMatches,
+      change: `${matches.length} total connections`,
+      icon: '🤝',
+    },
+    {
+      title: 'Teaching Skills',
+      value: totalSkillsTaught,
+      change: totalSkillsTaught ? 'Ready to share' : 'Add more skills',
+      icon: '🌟',
+    },
+    {
+      title: 'Learning Goals',
+      value: totalSkillsToLearn,
+      change: totalSkillsToLearn ? 'Fuel your growth' : 'Set your goals',
+      icon: '🚀',
+    },
+  ]
+
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+      <div className="flex min-h-[60vh] items-center justify-center text-white/70">
+        Loading your dashboard...
       </div>
     )
   }
 
-  const activeMatches = matches.filter(m => m.status === 'accepted').length
-  const totalSkillsTaught = profile?.teach_skills?.length || 0
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Welcome back, {profile?.name || 'there'}! 👋</h1>
-        <p className="text-gray-600 mt-2">Here's your learning journey overview</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card bg-gradient-to-br from-blue-50 to-blue-100">
-          <h3 className="text-lg font-semibold mb-2 text-gray-700">Active Matches</h3>
-          <p className="text-4xl font-bold text-blue-600">{activeMatches}</p>
-          <p className="text-sm text-gray-600 mt-1">Learning partnerships</p>
-        </div>
-        <div className="card bg-gradient-to-br from-green-50 to-green-100">
-          <h3 className="text-lg font-semibold mb-2 text-gray-700">Can Teach</h3>
-          <p className="text-4xl font-bold text-green-600">{totalSkillsTaught}</p>
-          <p className="text-sm text-gray-600 mt-1">Skills to share</p>
-        </div>
-        <div className="card bg-gradient-to-br from-purple-50 to-purple-100">
-          <h3 className="text-lg font-semibold mb-2 text-gray-700">Want to Learn</h3>
-          <p className="text-4xl font-bold text-purple-600">{profile?.learn_skills?.length || 0}</p>
-          <p className="text-sm text-gray-600 mt-1">Skills to acquire</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* Your Skills */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">🎓 Skills You Can Teach</h2>
-          {profile?.teach_skills?.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {profile.teach_skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                >
-                  {skill.name}
-                </span>
-              ))}
+    <div className="px-4 py-10 text-white">
+      <div className="mx-auto max-w-7xl space-y-12">
+        <section className="rounded-3xl bg-gradient-to-r from-primary-950 via-primary-900 to-primary-700 p-10 text-white shadow-xl">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-wide text-white/70">Welcome back</p>
+              <h1 className="mt-2 text-4xl font-semibold md:text-5xl">
+                {profile?.name ? `${profile.name}, ` : ''}your Skill Exchange HQ
+              </h1>
+              <p className="mt-4 max-w-xl text-white/80">
+                Track your progress, celebrate wins, and jump back in with your matches. The AI has lined up
+                a few suggestions to keep your momentum strong.
+              </p>
             </div>
-          ) : (
-            <p className="text-gray-500">No skills added yet</p>
-          )}
-        </div>
-
-        {/* Skills to Learn */}
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">🌱 Skills You Want to Learn</h2>
-          {profile?.learn_skills?.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {profile.learn_skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
-                >
-                  {skill.name}
-                </span>
-              ))}
+            <div className="grid gap-3 rounded-2xl bg-white/10 p-6 text-sm backdrop-blur md:w-72">
+              <div className="flex items-center justify-between">
+                <span className="text-white/70">Reciprocity Balance</span>
+                <span className="text-lg font-semibold">{reciprocityScore}%</span>
+              </div>
+              <div className="h-1 rounded-full bg-white/20">
+                <div
+                  className="h-1 rounded-full bg-white"
+                  style={{ width: `${Math.max(20, reciprocityScore)}%` }}
+                />
+              </div>
+              <p className="text-white/80">
+                Keep a balance between what you teach and learn for sharper matching.
+              </p>
             </div>
-          ) : (
-            <p className="text-gray-500">No skills added yet</p>
-          )}
-        </div>
-      </div>
+          </div>
+        </section>
 
-      {/* Quick Actions */}
-      <div className="card">
-        <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <button 
-            onClick={() => navigate('/profile')}
-            className="btn-secondary text-left flex items-center justify-between"
-          >
-            <span>✏️ Update Your Profile</span>
-            <span>→</span>
-          </button>
-          <button 
-            onClick={handleFindMatches}
-            disabled={searching}
-            className="btn-primary text-left flex items-center justify-between"
-          >
-            <span>{searching ? '🔍 Searching...' : '🎯 Find New Matches'}</span>
-            <span>→</span>
-          </button>
-          <button 
-            onClick={() => navigate('/matches')}
-            className="btn-secondary text-left flex items-center justify-between"
-          >
-            <span>👥 View All Matches</span>
-            <span>→</span>
-          </button>
-        </div>
-      </div>
+        <section className="grid gap-6 md:grid-cols-3">
+          {dashboardStats.map((card) => (
+            <div key={card.title} className="card relative overflow-hidden">
+              <span className="absolute -right-4 -top-4 text-6xl opacity-10">{card.icon}</span>
+              <div className="flex items-start justify-between">
+                <p className="text-sm font-medium text-slate-500">{card.title}</p>
+                <span className="text-2xl">{card.icon}</span>
+              </div>
+              <p className="mt-4 text-4xl font-bold text-slate-900">{card.value}</p>
+              <p className="mt-2 text-sm font-medium text-primary-600">{card.change}</p>
+            </div>
+          ))}
+        </section>
 
-      {/* Recent Matches */}
-      {matches.length > 0 && (
-        <div className="card mt-6">
-          <h2 className="text-2xl font-semibold mb-4">Recent Matches</h2>
-          <div className="space-y-3">
-            {matches.slice(0, 3).map((match) => (
-              <div
-                key={match.id}
-                className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/matches`)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">
-                      {match.user_a?.name || match.user_b?.name}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Match Score: {Math.round(match.score * 100)}%
-                    </p>
+        <section className="grid gap-6 lg:grid-cols-3">
+          <div className="card lg:col-span-2">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-2xl font-semibold text-slate-900">Upcoming Sessions</h2>
+              <button className="btn-primary sm:w-auto" onClick={() => toast('Scheduling coming soon!')}>
+                Schedule New Session
+              </button>
+            </div>
+            <div className="mt-6 space-y-4">
+              {upcomingSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="flex flex-col gap-3 rounded-2xl border border-slate-100/80 bg-slate-50/60 p-5 transition hover:border-primary-200 hover:bg-white"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-primary-600">{session.date}</p>
+                      <h3 className="text-lg font-semibold text-slate-900">{session.focus}</h3>
+                      <p className="text-sm text-slate-600">With {session.partner}</p>
+                    </div>
+                    <span className="inline-flex h-8 items-center justify-center rounded-full bg-white px-3 text-sm font-semibold text-primary-600 shadow-sm">
+                      {session.status}
+                    </span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm ${
-                    match.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                    match.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {match.status}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-2xl font-semibold text-slate-900">Quick Actions</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Suggested by the AI to keep your learning loop active.
+            </p>
+            <div className="mt-6 space-y-3">
+              {quickActions.map((action) => (
+                <div
+                  key={action}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700"
+                >
+                  {action}
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 space-y-3">
+              <button onClick={() => navigate('/profile')} className="btn-secondary w-full">
+                ✏️ Update Your Profile
+              </button>
+              <button onClick={handleFindMatches} disabled={searching} className="btn-primary w-full">
+                {searching ? '🔍 Searching...' : '🎯 Find New Matches'}
+              </button>
+              <button onClick={() => navigate('/matches')} className="btn-secondary w-full">
+                👥 View All Matches
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-3">
+          <div className="card lg:col-span-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-slate-900">Progress Highlights</h2>
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary-500">Auto-insights</span>
+            </div>
+            <div className="mt-6 grid gap-5 md:grid-cols-3">
+              {progressUpdates.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50/80 p-5 shadow-md"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary-500">{item.metric}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h3>
+                  <p className="mt-3 text-sm text-slate-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="card bg-gradient-to-br from-primary-50 to-white">
+            <h2 className="text-xl font-semibold text-slate-900">Weekly Focus</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Keep your streak alive by completing at least two micro-sessions each day.
+            </p>
+            <div className="mt-6 space-y-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                <div
+                  key={day}
+                  className="flex items-center justify-between rounded-xl bg-white/80 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
+                >
+                  <span>Day {day}</span>
+                  <span className={day <= activeMatches ? 'text-primary-600' : 'text-slate-400'}>
+                    {day <= activeMatches ? 'Completed' : 'Pending'}
                   </span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        </section>
+
+        <section className="card bg-white/90 text-slate-900">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold">Recent Matches</h2>
+              <p className="text-sm text-slate-500">
+                Peek at the latest connections the AI lined up for you.
+              </p>
+            </div>
+            <button onClick={() => navigate('/matches')} className="btn-primary sm:w-auto">
+              Manage Matches
+            </button>
+          </div>
+
+          {matches.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+              No matches yet. Add more skills to your profile and let the AI get to work.
+            </div>
+          ) : (
+            <div className="mt-6 space-y-4">
+              {matches.slice(0, 3).map((match) => {
+                const partner = match.user_a?.id === user?.id ? match.user_b : match.user_a
+                const partnerName = partner?.name || partner?.email || 'New connection'
+                const score = match.score ? Math.round(match.score * 100) : 80
+
+                return (
+                  <div
+                    key={match.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-white/80 p-5 shadow-sm transition hover:border-primary-200 hover:shadow-md"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-primary-600">Match Score · {score}%</p>
+                        <h3 className="text-lg font-semibold text-slate-900">{partnerName}</h3>
+                        <p className="text-sm text-slate-500 capitalize">Status: {match.status || 'pending'}</p>
+                      </div>
+                      <button onClick={() => navigate('/matches')} className="btn-secondary sm:w-auto">
+                        View Conversation
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }
