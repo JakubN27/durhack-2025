@@ -11,10 +11,11 @@ Built for DurHack 2025 🚀
 - **🎯 Smart Matching** - Reciprocal skill-based matching algorithm
 - **🔍 Search & Discovery** - Find learning partners by specific skills
 - **👤 Profile Management** - Organize skills by category and proficiency
-- **💬 Real-time Chat** - Connect with your matches (coming soon)
-- **🌱 Skill Legacy** - Track your learning impact (coming soon)
-- **🏆 Achievements** - Gamification system (coming soon)
+- **💬 Real-time Chat** - Integrated TalkJS chat for matched users
+- **📬 Conversations Inbox** - View and manage all your chats in one place
+- **🤝 Mutual Skills Display** - See what you can learn from each other
 - **🤖 AI Features** - Skill extraction and learning plans with Gemini
+- **📊 Match Scores** - See compatibility percentage with each match
 
 ---
 
@@ -25,6 +26,7 @@ Built for DurHack 2025 🚀
 - TailwindCSS for styling
 - React Router for navigation
 - React Hot Toast for notifications
+- TalkJS for real-time chat
 
 **Backend:**
 - Node.js + Express
@@ -49,9 +51,11 @@ Built for DurHack 2025 🚀
 ### 1. Install Dependencies
 
 ```bash
-# Install all dependencies (root, backend, and frontend)
-npm run install:all
+# Install all dependencies using npm workspaces (single command!)
+npm install
 ```
+
+This installs all dependencies for the root, backend, and frontend in a shared `node_modules` directory.
 
 ### 2. Configure Environment
 
@@ -67,8 +71,12 @@ PORT=3000
 ```bash
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_anon_key
+VITE_API_URL=http://localhost:3000
+VITE_TALKJS_APP_ID=your_talkjs_app_id
 VITE_GEMINI_API_KEY=your_gemini_key (optional)
 ```
+
+> **Note**: Get your TalkJS App ID from [TalkJS Dashboard](https://talkjs.com/dashboard)
 
 ### 3. Setup Database
 
@@ -81,8 +89,11 @@ Run the migration in Supabase SQL Editor:
 ### 4. Seed Test Data
 
 ```bash
-cd backend
-npm run seed
+# From project root
+npm run seed --workspace=backend
+
+# Or
+cd backend && npm run seed
 ```
 
 This creates 6 test users with perfect reciprocal matches.
@@ -118,7 +129,9 @@ Login with any of these (any password works):
 2. **Complete your profile** - Add skills you can teach and want to learn
 3. **Find matches** - Click "Find New Matches" on dashboard
 4. **Browse matches** - Search for specific skills
-5. **Connect** - Start learning from your perfect match!
+5. **Connect** - Click "Connect & Start Chat" on a match
+6. **Chat** - Start learning together in real-time!
+7. **Manage conversations** - View all chats in the Conversations page
 
 ---
 
@@ -208,6 +221,10 @@ npm run fresh-install    # Clean reinstall
 ### Backend Scripts
 
 ```bash
+# From project root:
+npm run seed --workspace=backend   # Seed test data
+
+# Or from backend directory:
 cd backend
 npm run seed             # Seed test data
 npm run dev              # Start with hot reload
@@ -221,6 +238,8 @@ npm start                # Production mode
 - `QUICK_START.md` - Getting started guide
 - `PROJECT_STRUCTURE.md` - Architecture explanation
 - `MATCHING_SYSTEM_GUIDE.md` - Matching algorithm details
+- `CHAT_FEATURE_GUIDE.md` - Real-time chat documentation
+- `WORKSPACE_SETUP.md` - npm workspaces guide
 - `backend/API_DOCUMENTATION.md` - API reference
 - `backend/TESTING_GUIDE.md` - Testing guide
 - `backend/SETUP.md` - Backend setup

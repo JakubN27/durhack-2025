@@ -14,7 +14,8 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^6.26.2"
+    "react-router-dom": "^6.26.2",
+    "talkjs": "^0.42.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 export default function Matches() {
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [potentialMatches, setPotentialMatches] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -74,9 +76,11 @@ export default function Matches() {
       const data = await response.json()
 
       if (data.success) {
-        toast.success(`Match request sent to ${matchData.user_name}!`)
-        // Refresh matches
-        await findMatches(user.id)
+        toast.success(`Match created! Opening chat...`)
+        // Navigate to chat
+        setTimeout(() => {
+          navigate(`/chat/${data.match.id}`)
+        }, 1000)
       } else {
         toast.error('Failed to create match')
       }
@@ -294,7 +298,7 @@ export default function Matches() {
                 onClick={() => handleCreateMatch(match)}
                 className="btn-primary w-full"
               >
-                Connect & Start Learning
+                💬 Connect & Start Chat
               </button>
             </div>
           ))}

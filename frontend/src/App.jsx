@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import Matches from './pages/Matches'
 import Chat from './pages/Chat'
+import Conversations from './pages/Conversations'
 import Dashboard from './pages/Dashboard'
 
 function App() {
@@ -84,6 +85,10 @@ function App() {
           <Route
             path="matches"
             element={session ? <Matches /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="conversations"
+            element={session ? <Conversations /> : <Navigate to="/login" />}
           />
           <Route
             path="chat/:matchId"

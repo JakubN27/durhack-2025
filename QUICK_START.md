@@ -8,10 +8,25 @@ All components are in place:
 - ✅ Database seeded with 6 test users
 - ✅ Environment variables configured
 - ✅ Toast notifications implemented
+- ✅ TalkJS chat integration
+- ✅ Unified workspace with shared node_modules
+
+## Prerequisites
+
+Make sure you have configured your environment variables:
+- **Backend**: `.env` file in the backend directory with `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, and `GEMINI_API_KEY`
+- **Frontend**: `.env.local` file in the frontend directory with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`, and `VITE_TALKJS_APP_ID`
 
 ## Start the Application
 
-### 1. Start Both Servers
+### 1. Install Dependencies (First Time Only)
+```bash
+npm install
+```
+
+This will install all dependencies for the root, frontend, and backend using npm workspaces.
+
+### 2. Start Both Servers
 ```bash
 npm run dev
 ```

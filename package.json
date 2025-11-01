@@ -9,15 +9,19 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" --names \"backend,frontend\" --prefix-colors \"bgBlue.bold,bgMagenta.bold\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ..",
-    "build": "cd frontend && npm run build",
-    "start": "cd backend && npm start",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "start": "npm start --workspace=backend",
+    "seed": "npm run seed --workspace=backend",
     "clean": "rm -rf node_modules frontend/node_modules backend/node_modules",
-    "fresh-install": "npm run clean && npm run install:all"
+    "fresh-install": "npm run clean && npm install",
+    "info": "echo '\n✨ SkillSwap Workspace Info\n' && echo '📦 Packages:' && echo \"  Root: $(ls node_modules 2>/dev/null | wc -l | xargs) packages\" && echo \"  Frontend: $(ls frontend/node_modules 2>/dev/null | wc -l | xargs) packages\" && echo \"  Backend: $(ls backend/node_modules 2>/dev/null | wc -l | xargs) packages\" && echo '\n🚀 Run: npm run dev' && echo '📚 Docs: See SETUP_COMPLETE.md\n'"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "talkjs": "^0.42.1"
   }
 }
