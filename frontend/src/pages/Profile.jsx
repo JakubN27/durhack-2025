@@ -169,7 +169,6 @@ export default function Profile() {
         <div className="card">
           <h2 className="text-xl font-semibold mb-4">🎓 Skills You Can Teach</h2>
           
-          {/* Add New Skill */}
           <div className="mb-4 p-4 bg-blue-50 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
               <input
@@ -207,7 +206,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Display Skills */}
           {profile.teach_skills?.length > 0 ? (
             <div className="space-y-2">
               {profile.teach_skills.map((skill, idx) => (
@@ -237,7 +235,6 @@ export default function Profile() {
         <div className="card">
           <h2 className="text-xl font-semibold mb-4">🌱 Skills You Want to Learn</h2>
           
-          {/* Add New Skill */}
           <div className="mb-4 p-4 bg-green-50 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
               <input
@@ -275,7 +272,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Display Skills */}
           {profile.learn_skills?.length > 0 ? (
             <div className="space-y-2">
               {profile.learn_skills.map((skill, idx) => (
