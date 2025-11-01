@@ -1,9 +1,14 @@
-import { Outlet, Link } from 'react-router-dom'
+import { Outlet, Link, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 
 export default function Layout({ session }) {
+  const navigate = useNavigate()
+  
   const handleSignOut = async () => {
     await supabase.auth.signOut()
+    toast.success('Signed out successfully')
+    navigate('/')
   }
 
   return (
@@ -29,13 +34,17 @@ export default function Layout({ session }) {
                 </>
               )}
             </div>
-            {session && (
-              <div className="flex items-center">
+            <div className="flex items-center">
+              {session ? (
                 <button onClick={handleSignOut} className="btn-secondary">
                   Sign Out
                 </button>
-              </div>
-            )}
+              ) : (
+                <Link to="/login" className="btn-primary">
+                  Sign In
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </nav>

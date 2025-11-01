@@ -1,143 +1,115 @@
-import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { useNavigate } from 'react-router-dom'
 
 export default function Home() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleAuth = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    if (!supabase) {
-      setError('Supabase is not configured. Please check your .env.local file.')
-      setLoading(false)
-      return
-    }
-
-    try {
-      if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ 
-          email, 
-          password,
-          options: {
-            emailRedirectTo: window.location.origin
-          }
-        })
-        if (error) throw error
-        if (data?.user?.identities?.length === 0) {
-          setError('This email is already registered. Please sign in instead.')
-        } else {
-          alert('Success! Check your email for confirmation link.')
-        }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-      }
-    } catch (error) {
-      console.error('Auth error:', error)
-      setError(error.message || 'An error occurred during authentication')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const navigate = useNavigate()
 
   return (
-    <div className="min-h-[calc(100vh-12rem)] flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+    <div className="min-h-[calc(100vh-12rem)]">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-primary-50 to-primary-100 py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Welcome to SkillSwap
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl md:text-2xl text-gray-700 mb-8">
             AI-powered skill exchange platform. Learn from others, teach what you know.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate('/login')}
+              className="btn-primary text-lg px-8 py-3"
+            >
+              Get Started
+            </button>
+            <button
+              onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
+              className="bg-white text-primary-600 border-2 border-primary-600 hover:bg-primary-50 text-lg px-8 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Learn More
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div className="card">
-          <h2 className="text-2xl font-semibold mb-6">
-            {isSignUp ? 'Create Account' : 'Sign In'}
-          </h2>
-
-          {!supabase && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">
-                ⚠️ Supabase is not configured. Please add your credentials to <code className="bg-red-100 px-1 rounded">.env.local</code>
+      {/* Features Section */}
+      <div id="features" className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-12">Why SkillSwap?</h2>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="card text-center">
+              <div className="text-5xl mb-4">🎯</div>
+              <h3 className="text-xl font-semibold mb-3">AI Matching</h3>
+              <p className="text-gray-600">
+                Our advanced AI pairs you with the perfect learning partners based on your skills and interests.
               </p>
             </div>
-          )}
-
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
-          
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                className="input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+            
+            <div className="card text-center">
+              <div className="text-5xl mb-4">🌱</div>
+              <h3 className="text-xl font-semibold mb-3">Skill Legacy</h3>
+              <p className="text-gray-600">
+                Track your impact and see how your knowledge spreads through the community.
+              </p>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                className="input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+            <div className="card text-center">
+              <div className="text-5xl mb-4">🏆</div>
+              <h3 className="text-xl font-semibold mb-3">Gamification</h3>
+              <p className="text-gray-600">
+                Earn badges and achievements as you help others learn and grow.
+              </p>
             </div>
+          </div>
 
+          {/* How It Works */}
+          <div className="bg-gray-50 rounded-2xl p-8 md:p-12">
+            <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  1
+                </div>
+                <h4 className="font-semibold mb-2">Sign Up</h4>
+                <p className="text-sm text-gray-600">Create your account and tell us what you want to learn</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  2
+                </div>
+                <h4 className="font-semibold mb-2">Get Matched</h4>
+                <p className="text-sm text-gray-600">AI finds you the best learning partners</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  3
+                </div>
+                <h4 className="font-semibold mb-2">Start Learning</h4>
+                <p className="text-sm text-gray-600">Connect and exchange knowledge in real-time</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  4
+                </div>
+                <h4 className="font-semibold mb-2">Track Progress</h4>
+                <p className="text-sm text-gray-600">See your impact and earn achievements</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center mt-16">
+            <h2 className="text-3xl font-bold mb-4">Ready to start your learning journey?</h2>
+            <p className="text-xl text-gray-600 mb-8">Join thousands of learners and teachers today</p>
             <button
-              type="submit"
-              className="w-full btn-primary"
-              disabled={loading}
+              onClick={() => navigate('/login')}
+              className="btn-primary text-lg px-10 py-4"
             >
-              {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+              Join SkillSwap Now
             </button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary-600 hover:text-primary-700"
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-          <div className="card">
-            <div className="text-3xl mb-2">🎯</div>
-            <h3 className="font-semibold">AI Matching</h3>
-            <p className="text-sm text-gray-600">Smart skill pairing</p>
-          </div>
-          <div className="card">
-            <div className="text-3xl mb-2">🌱</div>
-            <h3 className="font-semibold">Skill Legacy</h3>
-            <p className="text-sm text-gray-600">Track your impact</p>
-          </div>
-          <div className="card">
-            <div className="text-3xl mb-2">🏆</div>
-            <h3 className="font-semibold">Gamification</h3>
-            <p className="text-sm text-gray-600">Earn badges</p>
           </div>
         </div>
       </div>
