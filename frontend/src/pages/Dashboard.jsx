@@ -259,6 +259,9 @@ export default function Dashboard() {
               <button onClick={handleFindMatches} disabled={searching} className="btn-primary w-full">
                 {searching ? '🔍 Searching...' : '🎯 Find New Matches'}
               </button>
+              <button onClick={() => navigate('/conversations')} className="btn-secondary w-full">
+                💬 My Conversations
+              </button>
               <button onClick={() => navigate('/matches')} className="btn-secondary w-full">
                 👥 View All Matches
               </button>

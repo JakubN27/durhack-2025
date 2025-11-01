@@ -8,7 +8,9 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import Matches from './pages/Matches'
 import Chat from './pages/Chat'
+import Conversations from './pages/Conversations'
 import Dashboard from './pages/Dashboard'
+import Debug from './pages/Debug'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -86,12 +88,20 @@ function App() {
             element={session ? <Matches /> : <Navigate to="/login" />}
           />
           <Route
+            path="conversations"
+            element={session ? <Conversations /> : <Navigate to="/login" />}
+          />
+          <Route
             path="chat/:matchId"
             element={session ? <Chat /> : <Navigate to="/login" />}
           />
           <Route
             path="dashboard"
             element={session ? <Dashboard /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="debug"
+            element={session ? <Debug /> : <Navigate to="/login" />}
           />
         </Route>
       </Routes>

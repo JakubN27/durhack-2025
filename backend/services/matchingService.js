@@ -196,9 +196,35 @@ function findMutualSkills(userA, userB) {
 
 /**
  * Create a match in the database
+ * Checks if match already exists and returns it instead of creating a duplicate
  */
 export async function createMatch(userAId, userBId, score, mutualSkills) {
   try {
+    // First, check if match already exists (in either direction)
+    const { data: existingMatch, error: checkError } = await supabase
+      .from('matches')
+      .select(`
+        *,
+        user_a:users!matches_user_a_id_fkey(id, name, bio, teach_skills, learn_skills),
+        user_b:users!matches_user_b_id_fkey(id, name, bio, teach_skills, learn_skills)
+      `)
+      .or(`and(user_a_id.eq.${userAId},user_b_id.eq.${userBId}),and(user_a_id.eq.${userBId},user_b_id.eq.${userAId})`)
+      .maybeSingle()
+    
+    if (checkError && checkError.code !== 'PGRST116') {
+      // PGRST116 is "no rows returned", which is fine
+      throw checkError
+    }
+    
+    // If match exists, return it with a flag indicating it wasn't created
+    if (existingMatch) {
+      return {
+        ...existingMatch,
+        created: false
+      }
+    }
+    
+    // No existing match, create a new one
     const { data, error } = await supabase
       .from('matches')
       .insert({
@@ -206,13 +232,38 @@ export async function createMatch(userAId, userBId, score, mutualSkills) {
         user_b_id: userBId,
         score: score,
         mutual_skills: mutualSkills,
-        status: 'pending'
+        status: 'pending',
+        chat_enabled: true, // Explicitly enable chat
+        conversation_id: `match-${userAId}-${userBId}` // Generate conversation ID
       })
-      .select()
+      .select(`
+        *,
+        user_a:users!matches_user_a_id_fkey(id, name, bio, teach_skills, learn_skills),
+        user_b:users!matches_user_b_id_fkey(id, name, bio, teach_skills, learn_skills)
+      `)
       .single()
     
     if (error) throw error
-    return data
+    
+    // Also create conversation entry for TalkJS integration
+    try {
+      await supabase
+        .from('conversations')
+        .insert({
+          match_id: data.id,
+          talkjs_conversation_id: `match-${data.id}`,
+          participants: [userAId, userBId]
+        })
+      console.log(`[Match] Created conversation for match ${data.id}`)
+    } catch (convError) {
+      // Log but don't fail - conversation can be created later
+      console.error('[Match] Error creating conversation:', convError)
+    }
+    
+    return {
+      ...data,
+      created: true
+    }
   } catch (error) {
     console.error('Error creating match:', error)
     throw error

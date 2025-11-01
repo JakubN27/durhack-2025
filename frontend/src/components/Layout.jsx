@@ -17,6 +17,7 @@ export default function Layout({ session }) {
   const authedLinks = [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/matches', label: 'Matches' },
+    { to: '/conversations', label: '💬 Conversations' },
     { to: '/profile', label: 'Profile' },
   ]
 
