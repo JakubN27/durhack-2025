@@ -10,6 +10,8 @@ import { sessionsRouter } from './routes/sessions.js'
 import { messagesRouter } from './routes/messages.js'
 import { achievementsRouter } from './routes/achievements.js'
 import { aiRouter } from './routes/ai.js'
+import { chatRouter } from './routes/chat.js'
+import { notificationsRouter } from './routes/notifications.js'
 
 dotenv.config()
 
@@ -49,7 +51,9 @@ app.get('/', (req, res) => {
       messages: '/api/messages',
       achievements: '/api/achievements',
       ai: '/api/ai',
-      embeddings: '/api/embeddings'
+      embeddings: '/api/embeddings',
+      chat: '/api/chat',
+      notifications: '/api/notifications'
     },
     docs: 'See /api/docs for detailed documentation'
   })
@@ -65,6 +69,8 @@ app.use('/api/messages', messagesRouter)
 app.use('/api/achievements', achievementsRouter)
 app.use('/api/ai', aiRouter)
 app.use('/api/embeddings', embeddingsRouter)
+app.use('/api/chat', chatRouter)
+app.use('/api/notifications', notificationsRouter)
 
 // 404 handler
 app.use((req, res) => {
