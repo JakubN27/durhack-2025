@@ -52,8 +52,8 @@ chatRouter.get('/conversations/:userId', async (req, res) => {
         )
       `)
       .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
-      .eq('chat_enabled', true)
-      .order('last_message_at', { ascending: false, nullsFirst: false })
+      // Removed chat_enabled filter - show all matches
+      .order('created_at', { ascending: false })
 
     if (status !== 'all') {
       query = query.eq('status', status)
@@ -67,11 +67,14 @@ chatRouter.get('/conversations/:userId', async (req, res) => {
 
     if (error) throw error
 
+    // Log for debugging
+    console.log(`[Conversations] Found ${data?.length || 0} matches for user ${userId}`)
+
     // Format conversations with proper unread count per user
-    const conversations = data.map(match => {
+    const conversations = (data || []).map(match => {
       const isUserA = match.user_a_id === userId
       const otherUser = isUserA ? match.user_b : match.user_a
-      const unreadCount = isUserA ? match.unread_count_a : match.unread_count_b
+      const unreadCount = isUserA ? (match.unread_count_a || 0) : (match.unread_count_b || 0)
 
       return {
         matchId: match.id,
@@ -83,16 +86,16 @@ chatRouter.get('/conversations/:userId', async (req, res) => {
         score: match.score,
         mutualSkills: match.mutual_skills,
         unreadCount,
-        chatEnabled: match.chat_enabled,
+        chatEnabled: match.chat_enabled !== false, // Default to true if null
         otherUser: {
-          id: otherUser.id,
-          name: otherUser.name,
-          bio: otherUser.bio,
-          avatarUrl: otherUser.avatar_url,
-          teachSkills: otherUser.teach_skills,
-          learnSkills: otherUser.learn_skills,
-          isOnline: otherUser.is_online,
-          lastActive: otherUser.last_active
+          id: otherUser?.id,
+          name: otherUser?.name,
+          bio: otherUser?.bio,
+          avatarUrl: otherUser?.avatar_url,
+          teachSkills: otherUser?.teach_skills || [],
+          learnSkills: otherUser?.learn_skills || [],
+          isOnline: otherUser?.is_online || false,
+          lastActive: otherUser?.last_active
         }
       }
     })

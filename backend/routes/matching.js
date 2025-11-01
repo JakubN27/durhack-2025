@@ -32,6 +32,7 @@ matchingRouter.get('/find/:userId', async (req, res) => {
 /**
  * POST /api/matching/create
  * Create a match between two users
+ * If match already exists, returns the existing match instead of error
  */
 matchingRouter.post('/create', async (req, res) => {
   try {
@@ -45,7 +46,9 @@ matchingRouter.post('/create', async (req, res) => {
     
     res.json({
       success: true,
-      match
+      match,
+      created: match.created !== false,
+      message: match.created === false ? 'Match already exists' : 'Match created successfully'
     })
   } catch (error) {
     console.error('Create match error:', error)

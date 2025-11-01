@@ -25,20 +25,33 @@ export default function Conversations() {
         return
       }
       
+      console.log('[Conversations] Loading for user:', authUser.id)
       setUser(authUser)
       
-      // Get all user's matches
+      // Use the matching API to get all matches (simpler and more reliable)
       const response = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
       const data = await response.json()
+      console.log('[Conversations] API response:', data)
       
       if (data.success) {
+        console.log('[Conversations] Found matches:', data.count)
         setMatches(data.matches || [])
+        
+        if (!data.matches || data.matches.length === 0) {
+          console.log('[Conversations] No matches found for this user')
+        }
       } else {
-        toast.error('Failed to load conversations')
+        console.error('[Conversations] API returned error:', data.error)
+        toast.error(data.error || 'Failed to load conversations')
       }
     } catch (error) {
-      console.error('Error loading conversations:', error)
-      toast.error('Failed to load conversations')
+      console.error('[Conversations] Error loading conversations:', error)
+      toast.error('Failed to load conversations: ' + error.message)
     } finally {
       setLoading(false)
     }
@@ -141,33 +154,58 @@ export default function Conversations() {
           <div className="space-y-3">
             {matches.map((match) => {
               const otherUser = getOtherUser(match)
+              console.log('[Conversations] Rendering match:', { matchId: match.id, otherUser: otherUser?.name })
               
               return (
                 <div
                   key={match.id}
-                  className="card hover:shadow-lg transition-shadow cursor-pointer border-2 border-gray-100 hover:border-primary-300"
+                  className="card hover:shadow-lg transition-shadow cursor-pointer border-2 border-gray-100 hover:border-primary-300 relative"
                   onClick={() => navigate(`/chat/${match.id}`)}
                 >
+                  {/* Unread Badge */}
+                  {match.unread_count > 0 && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full">
+                        {match.unread_count > 9 ? '9+' : match.unread_count}
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center gap-4">
                     {/* Avatar */}
-                    <img
-                      src={otherUser?.avatar_url || `https://ui-avatars.com/api/?name=${otherUser?.name}&size=200`}
-                      alt={otherUser?.name}
-                      className="w-16 h-16 rounded-full flex-shrink-0"
-                    />
+                    <div className="relative">
+                      <img
+                        src={otherUser?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser?.name || 'User')}&size=200`}
+                        alt={otherUser?.name || 'User'}
+                        className="w-16 h-16 rounded-full flex-shrink-0"
+                      />
+                      {/* Online indicator - only show if explicitly online */}
+                      {otherUser?.is_online && (
+                        <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+                      )}
+                    </div>
                     
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-semibold text-gray-900 truncate">
-                          {otherUser?.name}
+                          {otherUser?.name || 'Unknown User'}
                         </h3>
                         {getStatusBadge(match.status)}
                       </div>
                       
-                      {otherUser?.bio && (
+                      {/* Last message preview */}
+                      {match.last_message_preview ? (
+                        <p className="text-sm text-gray-600 line-clamp-1 mb-2">
+                          💬 {match.last_message_preview}
+                        </p>
+                      ) : otherUser?.bio ? (
                         <p className="text-sm text-gray-600 line-clamp-1 mb-2">
                           {otherUser.bio}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-400 italic mb-2">
+                          No messages yet - start the conversation!
                         </p>
                       )}
                       
@@ -177,9 +215,15 @@ export default function Conversations() {
                             {Math.round((match.score || 0) * 100)}%
                           </span>
                         </span>
-                        <span>
-                          Connected {formatDate(match.created_at)}
-                        </span>
+                        {match.last_message_at ? (
+                          <span>
+                            💬 Last message {formatDate(match.last_message_at)}
+                          </span>
+                        ) : (
+                          <span>
+                            Connected {formatDate(match.created_at)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     

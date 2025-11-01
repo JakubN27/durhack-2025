@@ -76,13 +76,20 @@ export default function Matches() {
       const data = await response.json()
 
       if (data.success) {
-        toast.success(`Match created! Opening chat...`)
+        if (data.created === false) {
+          // Match already exists
+          toast.success(`You're already matched! Opening chat...`)
+        } else {
+          // New match created
+          toast.success(`Match created! Opening chat...`)
+        }
+        
         // Navigate to chat
         setTimeout(() => {
           navigate(`/chat/${data.match.id}`)
         }, 1000)
       } else {
-        toast.error('Failed to create match')
+        toast.error(data.error || 'Failed to create match')
       }
     } catch (error) {
       console.error('Error creating match:', error)

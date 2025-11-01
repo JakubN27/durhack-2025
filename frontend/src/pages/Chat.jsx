@@ -8,21 +8,22 @@ export default function Chat() {
   const { matchId } = useParams()
   const navigate = useNavigate()
   const chatboxEl = useRef(null)
+  const chatboxInstance = useRef(null)
   const [user, setUser] = useState(null)
   const [match, setMatch] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [chatbox, setChatbox] = useState(null)
 
   useEffect(() => {
     loadChatData()
     
     return () => {
       // Cleanup chatbox on unmount
-      if (chatbox) {
-        chatbox.destroy()
+      if (chatboxInstance.current) {
+        chatboxInstance.current.destroy()
+        chatboxInstance.current = null
       }
     }
-  }, [matchId, chatbox])
+  }, [matchId])
 
   const loadChatData = async () => {
     try {
@@ -56,6 +57,9 @@ export default function Chat() {
       
       setMatch(matchData.match)
       
+      // Wait a bit for DOM to be fully ready
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       // Initialize TalkJS
       await initializeChat(userData.data, matchData.match)
       
@@ -78,6 +82,34 @@ export default function Chat() {
         throw new Error('Could not find other user in match')
       }
       
+      // Mark messages as read when user opens chat
+      try {
+        await fetch(`http://localhost:3000/api/chat/mark-read/${matchId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: currentUser.id
+          })
+        })
+      } catch (err) {
+        console.error('Error marking messages as read:', err)
+        // Don't block chat initialization if this fails
+      }
+      
+      // Wait for DOM element to be available
+      if (!chatboxEl.current) {
+        console.error('Chat container not found')
+        throw new Error('Chat container not found')
+      }
+      
+      // Clean up existing chatbox if any
+      if (chatboxInstance.current) {
+        chatboxInstance.current.destroy()
+        chatboxInstance.current = null
+      }
+      
       // Initialize TalkJS session
       const { session } = await initializeTalkJS(currentUser)
       
@@ -89,11 +121,14 @@ export default function Chat() {
         `match-${matchId}`
       )
       
-      // Create chatbox
+      // Create chatbox and mount it
       const newChatbox = createChatbox(session, conversation)
+      
+      // Mount to DOM
       newChatbox.mount(chatboxEl.current)
       
-      setChatbox(newChatbox)
+      // Store in ref instead of state to avoid re-renders
+      chatboxInstance.current = newChatbox
       
     } catch (error) {
       console.error('Error initializing chat:', error)

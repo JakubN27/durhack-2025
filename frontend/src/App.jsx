@@ -10,6 +10,7 @@ import Matches from './pages/Matches'
 import Chat from './pages/Chat'
 import Conversations from './pages/Conversations'
 import Dashboard from './pages/Dashboard'
+import Debug from './pages/Debug'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -97,6 +98,10 @@ function App() {
           <Route
             path="dashboard"
             element={session ? <Dashboard /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="debug"
+            element={session ? <Debug /> : <Navigate to="/login" />}
           />
         </Route>
       </Routes>
