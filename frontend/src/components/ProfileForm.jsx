@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
 const ProfileForm = () => {
   const [loading, setLoading] = useState(false);
@@ -34,47 +35,61 @@ const ProfileForm = () => {
     setLoading(true);
 
     try {
-      // Get the current user
+      // Get the current user from Supabase auth
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) throw new Error('No user logged in');
-
-      // If there's a profile picture, upload it first
-      let profile_picture_url = null;
-      if (formData.profilePicture) {
-        const fileExt = formData.profilePicture.name.split('.').pop();
-        const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-        const filePath = `profile-pictures/${fileName}`;
-
-        const { error: uploadError, data } = await supabase.storage
-          .from('profiles')
-          .upload(filePath, formData.profilePicture);
-
-        if (uploadError) throw uploadError;
-        profile_picture_url = data.path;
+      if (!user) {
+        toast.error('Not authenticated');
+        return;
       }
 
-      // Update the profile in the database
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          updated_at: new Date().toISOString(),
-          name: formData.name,
-          profile_picture_url,
-          favorite_ice_cream: formData.favoriteIceCream,
-          spirit_animal: formData.spirit_animal,
-          personality_type: formData.personality_type,
-          daily_rhythm: formData.daily_rhythm,
-          personal_color: formData.color
-        });
+      // Prepare profile data for backend API
+      const profileData = {
+        name: formData.name,
+        favorite_ice_cream: formData.favoriteIceCream,
+        spirit_animal: formData.spirit_animal,
+        personality_type: formData.personality_type,
+        daily_rhythm: formData.daily_rhythm,
+        personal_color: formData.color
+      };
 
-      if (error) throw error;
-      alert('Profile updated successfully!');
+      // If there's a profile picture, we'll need to handle it separately
+      // For now, we'll skip file upload and just update the text fields
+      // TODO: Implement file upload through backend API
+      if (formData.profilePicture) {
+        toast('Profile picture upload coming soon!', { icon: '📷' });
+      }
+
+      // Update profile via backend API
+      const response = await fetch(`http://localhost:3000/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Profile updated successfully!');
+        // Reset form
+        setFormData({
+          name: '',
+          profilePicture: null,
+          favoriteIceCream: '',
+          spirit_animal: '',
+          personality_type: 'introvert',
+          daily_rhythm: 'early_bird',
+          color: ''
+        });
+      } else {
+        throw new Error(result.error || 'Failed to update profile');
+      }
       
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile. Please try again.');
+      toast.error('Error updating profile. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -17,31 +17,30 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Get current user
+      // Get current user from Supabase auth
       const { data: { user: authUser } } = await supabase.auth.getUser()
       setUser(authUser)
 
       if (!authUser) return
 
-      // Get user profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
+      // Get user profile via backend API
+      const profileResponse = await fetch(`http://localhost:3000/api/users/${authUser.id}`)
+      const profileResult = await profileResponse.json()
 
-      if (profileError) throw profileError
-      setProfile(profileData)
+      if (profileResult.success && profileResult.data) {
+        setProfile(profileResult.data)
+      }
 
-      // Get user matches
-      const response = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
-      const matchData = await response.json()
+      // Get user matches via backend API
+      const matchResponse = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
+      const matchData = await matchResponse.json()
       
       if (matchData.success) {
         setMatches(matchData.matches || [])
       }
     } catch (error) {
       console.error('Error loading dashboard:', error)
+      toast.error('Failed to load dashboard data')
     } finally {
       setLoading(false)
     }

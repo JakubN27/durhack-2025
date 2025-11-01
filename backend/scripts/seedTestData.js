@@ -16,7 +16,12 @@ const testUsers = [
       { name: 'Python', category: 'Programming', proficiency: 'beginner' },
       { name: 'Machine Learning', category: 'AI', proficiency: 'beginner' },
       { name: 'Data Science', category: 'AI', proficiency: 'beginner' }
-    ]
+    ],
+    favorite_ice_cream: 'Mint Chocolate Chip',
+    spirit_animal: 'Owl',
+    personality_type: 'introvert',
+    daily_rhythm: 'night_owl',
+    personal_color: 'Teal'
   },
   {
     id: '22222222-2222-2222-2222-222222222222',
@@ -33,7 +38,12 @@ const testUsers = [
       { name: 'React', category: 'Frontend', proficiency: 'beginner' },
       { name: 'JavaScript', category: 'Programming', proficiency: 'intermediate' },
       { name: 'UI/UX Design', category: 'Design', proficiency: 'beginner' }
-    ]
+    ],
+    favorite_ice_cream: 'Coffee',
+    spirit_animal: 'Eagle',
+    personality_type: 'introvert',
+    daily_rhythm: 'early_bird',
+    personal_color: 'Navy Blue'
   },
   {
     id: '33333333-3333-3333-3333-333333333333',
@@ -49,7 +59,12 @@ const testUsers = [
       { name: 'Android', category: 'Mobile', proficiency: 'beginner' },
       { name: 'Kotlin', category: 'Programming', proficiency: 'beginner' },
       { name: 'Node.js', category: 'Backend', proficiency: 'beginner' }
-    ]
+    ],
+    favorite_ice_cream: 'Strawberry',
+    spirit_animal: 'Dolphin',
+    personality_type: 'extrovert',
+    daily_rhythm: 'early_bird',
+    personal_color: 'Coral Pink'
   },
   {
     id: '44444444-4444-4444-4444-444444444444',
@@ -66,7 +81,12 @@ const testUsers = [
       { name: 'Swift', category: 'Mobile', proficiency: 'beginner' },
       { name: 'iOS Development', category: 'Mobile', proficiency: 'beginner' },
       { name: 'Android', category: 'Mobile', proficiency: 'beginner' }
-    ]
+    ],
+    favorite_ice_cream: 'Vanilla',
+    spirit_animal: 'Wolf',
+    personality_type: 'extrovert',
+    daily_rhythm: 'night_owl',
+    personal_color: 'Emerald Green'
   },
   {
     id: '55555555-5555-5555-5555-555555555555',
@@ -83,7 +103,12 @@ const testUsers = [
       { name: 'JavaScript', category: 'Programming', proficiency: 'intermediate' },
       { name: 'React', category: 'Frontend', proficiency: 'beginner' },
       { name: 'TypeScript', category: 'Programming', proficiency: 'beginner' }
-    ]
+    ],
+    favorite_ice_cream: 'Cookies and Cream',
+    spirit_animal: 'Butterfly',
+    personality_type: 'extrovert',
+    daily_rhythm: 'early_bird',
+    personal_color: 'Lavender'
   },
   {
     id: '66666666-6666-6666-6666-666666666666',
@@ -100,7 +125,12 @@ const testUsers = [
       { name: 'Python', category: 'Programming', proficiency: 'intermediate' },
       { name: 'Machine Learning', category: 'AI', proficiency: 'beginner' },
       { name: 'TensorFlow', category: 'AI', proficiency: 'beginner' }
-    ]
+    ],
+    favorite_ice_cream: 'Rocky Road',
+    spirit_animal: 'Bear',
+    personality_type: 'introvert',
+    daily_rhythm: 'night_owl',
+    personal_color: 'Charcoal Gray'
   }
 ]
 
