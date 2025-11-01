@@ -10,6 +10,25 @@ const profileTips = [
 
 const categories = ['Programming', 'Frontend', 'Backend', 'Mobile', 'AI', 'Design', 'DevOps', 'Database', 'Cloud', 'Other']
 const proficiencies = ['beginner', 'intermediate', 'advanced', 'expert']
+const personalityOptions = [
+  { value: 'introvert', label: 'Introvert', emoji: '🧘' },
+  { value: 'extrovert', label: 'Extrovert', emoji: '🎈' },
+]
+const rhythmOptions = [
+  { value: 'early_bird', label: 'Early bird', emoji: '🌅' },
+  { value: 'night_owl', label: 'Night owl', emoji: '🌙' },
+]
+
+const fieldLabelClass = 'mb-2 block text-sm font-semibold tracking-wide text-slate-900'
+const fieldInputClass =
+  'input bg-white border-primary-200/70 text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:ring-primary-300/80'
+const helperTextClass = 'text-xs text-slate-600'
+
+const formatLabel = (value = '') =>
+  value
+    .toString()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 
 export default function Profile() {
   const [loading, setLoading] = useState(true)
@@ -21,8 +40,8 @@ export default function Profile() {
     learn_skills: [],
     favorite_ice_cream: '',
     spirit_animal: '',
-    personality_type: 'introvert',
-    daily_rhythm: 'early_bird',
+    personality_type: '',
+    daily_rhythm: '',
     personal_color: '',
   })
   const [newTeachSkill, setNewTeachSkill] = useState({
@@ -60,8 +79,8 @@ export default function Profile() {
           learn_skills: result.data.learn_skills || [],
           favorite_ice_cream: result.data.favorite_ice_cream || '',
           spirit_animal: result.data.spirit_animal || '',
-          personality_type: result.data.personality_type || 'introvert',
-          daily_rhythm: result.data.daily_rhythm || 'early_bird',
+          personality_type: result.data.personality_type || '',
+          daily_rhythm: result.data.daily_rhythm || '',
           personal_color: result.data.personal_color || '',
         }))
       } else if (result.error) {
@@ -212,19 +231,19 @@ export default function Profile() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-semibold text-slate-900">Your story</h2>
-                  <p className="mt-1 text-sm text-slate-500">What should the community know about you?</p>
+                  <p className="mt-1 text-sm text-slate-600">What should the community know about you?</p>
                 </div>
-                <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase text-primary-600">
+                <span className="rounded-full bg-primary-100/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-900">
                   AI powered
                 </span>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
+                  <label className={fieldLabelClass}>Name</label>
                   <input
                     type="text"
-                    className="input"
+                    className={fieldInputClass}
                     value={profile.name}
                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                     placeholder="How should others call you?"
@@ -233,24 +252,24 @@ export default function Profile() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-slate-700">Bio</label>
+                  <label className={fieldLabelClass}>Bio</label>
                   <textarea
-                    className="input min-h-[140px]"
+                    className={`${fieldInputClass} min-h-[140px]`}
                     value={profile.bio || ''}
                     onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                     placeholder="Share your background, what you love teaching, and what you are eager to learn."
                     required
                   />
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className={`mt-2 ${helperTextClass}`}>
                     The AI reads this to extract skills and recommend brilliant matches.
                   </p>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">🍦 Favourite ice cream</label>
+                  <label className={fieldLabelClass}>� Favourite ice cream</label>
                   <input
                     type="text"
-                    className="input"
+                    className={fieldInputClass}
                     value={profile.favorite_ice_cream || ''}
                     onChange={(e) => setProfile({ ...profile, favorite_ice_cream: e.target.value })}
                     placeholder="Mint chocolate chip, vanilla..."
@@ -258,10 +277,10 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">🦁 Spirit animal</label>
+                  <label className={fieldLabelClass}>🐾 Spirit animal</label>
                   <input
                     type="text"
-                    className="input"
+                    className={fieldInputClass}
                     value={profile.spirit_animal || ''}
                     onChange={(e) => setProfile({ ...profile, spirit_animal: e.target.value })}
                     placeholder="Lion, owl, dolphin..."
@@ -269,12 +288,12 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    🎨 If you were a colour, what would you be?
+                  <label className={fieldLabelClass}>
+                    � If you were a colour, what would you be?
                   </label>
                   <input
                     type="text"
-                    className="input"
+                    className={fieldInputClass}
                     value={profile.personal_color || ''}
                     onChange={(e) => setProfile({ ...profile, personal_color: e.target.value })}
                     placeholder="Deep forest green, sunrise orange..."
@@ -282,36 +301,40 @@ export default function Profile() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-slate-700">👥 Personality type</label>
+                  <label className={`${fieldLabelClass} mb-1`}>🧭 Personality vibe</label>
                   <div className="flex gap-4">
-                    {['introvert', 'extrovert'].map((type) => (
-                      <label key={type} className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                    {personalityOptions.map((option) => (
+                      <label key={option.value} className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                         <input
                           type="radio"
                           name="personality_type"
-                          value={type}
-                          checked={profile.personality_type === type}
+                          value={option.value}
+                          checked={profile.personality_type === option.value}
                           onChange={(e) => setProfile({ ...profile, personality_type: e.target.value })}
                         />
-                        {type === 'introvert' ? '🤫 Introvert' : '🎉 Extrovert'}
+                        <span>
+                          {option.emoji} {option.label}
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-slate-700">⏰ Daily rhythm</label>
+                  <label className={`${fieldLabelClass} mb-1`}>🕰️ Daily rhythm</label>
                   <div className="flex gap-4">
-                    {['early_bird', 'night_owl'].map((rhythm) => (
-                      <label key={rhythm} className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                    {rhythmOptions.map((option) => (
+                      <label key={option.value} className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                         <input
                           type="radio"
                           name="daily_rhythm"
-                          value={rhythm}
-                          checked={profile.daily_rhythm === rhythm}
+                          value={option.value}
+                          checked={profile.daily_rhythm === option.value}
                           onChange={(e) => setProfile({ ...profile, daily_rhythm: e.target.value })}
                         />
-                        {rhythm === 'early_bird' ? '🌅 Early bird' : '🦉 Night owl'}
+                        <span>
+                          {option.emoji} {option.label}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -319,7 +342,7 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-slate-500">
+                <p className={helperTextClass}>
                   Updated {profile.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'just now'}
                 </p>
                 <button type="submit" className="btn-primary sm:w-auto" disabled={saving}>
@@ -342,26 +365,26 @@ export default function Profile() {
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
-            <div className="card bg-gradient-to-br from-primary-50 to-white">
+            <div className="card bg-gradient-to-br from-primary-50/80 to-white/90">
               <div className="flex flex-col gap-4">
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900">Skills you can teach</h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-600">
                     These are how you light up the community. Add detail to attract the right learners.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-primary-100 bg-primary-50/50 p-4">
+                <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4">
                   <div className="grid gap-3 md:grid-cols-4">
                     <input
                       type="text"
                       placeholder="Skill name (e.g., React)"
-                      className="input"
+                      className={fieldInputClass}
                       value={newTeachSkill.name}
                       onChange={(e) => setNewTeachSkill({ ...newTeachSkill, name: e.target.value })}
                     />
                     <select
-                      className="input"
+                      className={fieldInputClass}
                       value={newTeachSkill.category}
                       onChange={(e) => setNewTeachSkill({ ...newTeachSkill, category: e.target.value })}
                     >
@@ -372,13 +395,13 @@ export default function Profile() {
                       ))}
                     </select>
                     <select
-                      className="input"
+                      className={fieldInputClass}
                       value={newTeachSkill.proficiency}
                       onChange={(e) => setNewTeachSkill({ ...newTeachSkill, proficiency: e.target.value })}
                     >
                       {proficiencies.map((level) => (
                         <option key={level} value={level}>
-                          {level}
+                          {formatLabel(level)}
                         </option>
                       ))}
                     </select>
@@ -393,18 +416,18 @@ export default function Profile() {
                     {profile.teach_skills.map((skill, idx) => (
                       <div
                         key={`${skill.name}-${idx}`}
-                        className="flex items-center justify-between rounded-2xl border border-primary-100 bg-white px-4 py-3 text-sm text-slate-700"
+                        className="flex items-center justify-between rounded-2xl border border-primary-100 bg-white/90 px-4 py-3 text-sm text-slate-900"
                       >
                         <div>
-                          <span className="font-semibold text-primary-700">{skill.name}</span>
-                          <span className="ml-3 text-xs uppercase tracking-wide text-primary-500">
-                            {skill.category} · {skill.proficiency}
+                          <span className="font-semibold text-slate-900">{skill.name}</span>
+                          <span className="ml-3 text-xs uppercase tracking-wide text-slate-600">
+                            {formatLabel(skill.category)} · {formatLabel(skill.proficiency)}
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveTeachSkill(idx)}
-                          className="text-xs font-semibold text-primary-600 hover:text-primary-700"
+                          className="text-xs font-semibold text-slate-700 hover:text-slate-900"
                         >
                           Remove
                         </button>
@@ -412,33 +435,33 @@ export default function Profile() {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-primary-200 bg-primary-50/40 p-6 text-sm text-primary-700">
+                  <div className="rounded-2xl border border-dashed border-primary-200/80 bg-primary-50/60 p-6 text-sm text-slate-900">
                     Share what you love teaching so the AI can spotlight your expertise.
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="card bg-gradient-to-br from-white to-slate-50">
+            <div className="card bg-gradient-to-br from-white/90 to-slate-50/90">
               <div className="flex flex-col gap-4">
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900">Skills you want to learn</h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-600">
                     Tell the AI what to prioritise next so it can source partners a few steps ahead.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-4">
                   <div className="grid gap-3 md:grid-cols-4">
                     <input
                       type="text"
                       placeholder="Skill name (e.g., Python)"
-                      className="input"
+                      className={fieldInputClass}
                       value={newLearnSkill.name}
                       onChange={(e) => setNewLearnSkill({ ...newLearnSkill, name: e.target.value })}
                     />
                     <select
-                      className="input"
+                      className={fieldInputClass}
                       value={newLearnSkill.category}
                       onChange={(e) => setNewLearnSkill({ ...newLearnSkill, category: e.target.value })}
                     >
@@ -449,13 +472,13 @@ export default function Profile() {
                       ))}
                     </select>
                     <select
-                      className="input"
+                      className={fieldInputClass}
                       value={newLearnSkill.proficiency}
                       onChange={(e) => setNewLearnSkill({ ...newLearnSkill, proficiency: e.target.value })}
                     >
                       {proficiencies.map((level) => (
                         <option key={level} value={level}>
-                          {level}
+                          {formatLabel(level)}
                         </option>
                       ))}
                     </select>
@@ -470,18 +493,18 @@ export default function Profile() {
                     {profile.learn_skills.map((skill, idx) => (
                       <div
                         key={`${skill.name}-${idx}`}
-                        className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700"
+                        className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900"
                       >
                         <div>
-                          <span className="font-semibold text-slate-800">{skill.name}</span>
-                          <span className="ml-3 text-xs uppercase tracking-wide text-slate-500">
-                            {skill.category} · {skill.proficiency}
+                          <span className="font-semibold text-slate-900">{skill.name}</span>
+                          <span className="ml-3 text-xs uppercase tracking-wide text-slate-600">
+                            {formatLabel(skill.category)} · {formatLabel(skill.proficiency)}
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveLearnSkill(idx)}
-                          className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+                          className="text-xs font-semibold text-slate-700 hover:text-slate-900"
                         >
                           Remove
                         </button>
@@ -489,7 +512,7 @@ export default function Profile() {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+                  <div className="rounded-2xl border border-dashed border-slate-200/80 bg-primary-50/50 p-6 text-sm text-slate-900">
                     Tell us what you are exploring next so we can introduce mentors who are a few steps ahead.
                   </div>
                 )}

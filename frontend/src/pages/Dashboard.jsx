@@ -169,7 +169,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm uppercase tracking-wide text-white/70">Welcome back</p>
               <h1 className="mt-2 text-4xl font-semibold md:text-5xl">
-                {profile?.name ? `${profile.name}, ` : ''}your Skill Exchange HQ
+                {profile?.name ? `${profile.name}, ` : ''}Your Skill Exchange HQ
               </h1>
               <p className="mt-4 max-w-xl text-white/80">
                 Track your progress, celebrate wins, and jump back in with your matches. The AI has lined up
