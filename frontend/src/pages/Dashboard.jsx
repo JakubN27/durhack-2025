@@ -9,23 +9,6 @@ const quickActions = [
   'Update availability for next week',
 ]
 
-const upcomingSessions = [
-  {
-    id: 1,
-    partner: 'Amelia Brown',
-    focus: 'UI Animation Deep Dive',
-    date: 'Today · 4:00 PM',
-    status: 'Confirmed',
-  },
-  {
-    id: 2,
-    partner: 'Devon Chen',
-    focus: 'React Performance Clinic',
-    date: 'Tomorrow · 11:30 AM',
-    status: 'Pending notes',
-  },
-]
-
 const progressUpdates = [
   {
     title: 'Skill Legacy Growth',
@@ -51,6 +34,11 @@ export default function Dashboard() {
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
+  const [chatActivity, setChatActivity] = useState({
+    lastInteractionAt: null,
+    partnerName: null,
+    conversations: [],
+  })
 
   useEffect(() => {
     loadDashboardData()
@@ -75,11 +63,73 @@ export default function Dashboard() {
       if (matchData.success) {
         setMatches(matchData.matches || [])
       }
+
+      await loadChatActivity(authUser.id)
     } catch (error) {
       console.error('Error loading dashboard:', error)
       toast.error('Failed to load dashboard data')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadChatActivity = async (userId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/chat/conversations/${userId}?status=all&limit=100`
+      )
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (!data.success || !data.conversations?.length) {
+        setChatActivity({ lastInteractionAt: null, partnerName: null, conversations: [] })
+        return
+      }
+
+      const latestConversation = data.conversations.reduce((latest, conversation) => {
+        const candidateTimestamp = conversation.lastMessageAt || conversation.createdAt
+
+        if (!candidateTimestamp) {
+          return latest
+        }
+
+        if (!latest) {
+          return {
+            timestamp: candidateTimestamp,
+            name: conversation.otherUser?.name || 'SkillSwap partner',
+          }
+        }
+
+        const latestDate = new Date(latest.timestamp)
+        const candidateDate = new Date(candidateTimestamp)
+
+        if (candidateDate > latestDate) {
+          return {
+            timestamp: candidateTimestamp,
+            name: conversation.otherUser?.name || 'SkillSwap partner',
+          }
+        }
+
+        return latest
+      }, null)
+
+      if (!latestConversation) {
+        setChatActivity({ lastInteractionAt: null, partnerName: null, conversations: data.conversations || [] })
+        return
+      }
+
+      setChatActivity({
+        lastInteractionAt: latestConversation.timestamp,
+        partnerName: latestConversation.name,
+        conversations: data.conversations || [],
+      })
+    } catch (error) {
+      console.error('Error loading chat activity:', error)
+      setChatActivity({ lastInteractionAt: null, partnerName: null, conversations: [] })
     }
   }
 
@@ -115,10 +165,10 @@ export default function Dashboard() {
     }
   }
 
-  const activeMatches = useMemo(
-    () => matches.filter((m) => m.status === 'accepted').length,
-    [matches],
-  )
+  const activeMatches = useMemo(() => {
+    const activeStatuses = new Set(['active', 'accepted'])
+    return matches.filter((m) => activeStatuses.has((m.status || '').toLowerCase())).length
+  }, [matches])
   const totalSkillsTaught = profile?.teach_skills?.length || 0
   const totalSkillsToLearn = profile?.learn_skills?.length || 0
   const reciprocityScore = totalSkillsTaught + totalSkillsToLearn === 0
@@ -152,6 +202,98 @@ export default function Dashboard() {
       icon: '🚀',
     },
   ]
+
+  const formatRelativeTime = (isoString) => {
+    if (!isoString) return null
+
+    const target = new Date(isoString)
+    if (Number.isNaN(target.getTime())) return null
+
+    const diffMs = Date.now() - target.getTime()
+    const minute = 60 * 1000
+    const hour = 60 * minute
+    const day = 24 * hour
+    const week = 7 * day
+
+    if (diffMs < minute) return 'just now'
+    if (diffMs < hour) {
+      const minutes = Math.round(diffMs / minute)
+      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
+    }
+    if (diffMs < day) {
+      const hours = Math.round(diffMs / hour)
+      return `${hours} hour${hours === 1 ? '' : 's'} ago`
+    }
+    if (diffMs < week) {
+      const days = Math.round(diffMs / day)
+      return `${days} day${days === 1 ? '' : 's'} ago`
+    }
+
+    return target.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const weeklyFocusDays = useMemo(() => {
+    const conversations = chatActivity.conversations || []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const startOfWeek = new Date(today)
+    startOfWeek.setDate(today.getDate() - today.getDay()) // Sunday as day 0
+
+    const dayBuckets = Array.from({ length: 7 }, () => new Set())
+    const dayMs = 24 * 60 * 60 * 1000
+
+    conversations.forEach((conversation) => {
+      const referenceTimestamp = conversation.lastMessageAt || conversation.createdAt
+      if (!referenceTimestamp) return
+
+      const eventDate = new Date(referenceTimestamp)
+      if (Number.isNaN(eventDate.getTime())) return
+
+      eventDate.setHours(0, 0, 0, 0)
+
+      const diff = Math.floor((eventDate.getTime() - startOfWeek.getTime()) / dayMs)
+
+      if (diff < 0 || diff > 6) return
+
+      const uniqueKey = conversation.matchId || conversation.conversationId || conversation.otherUser?.id || referenceTimestamp
+      dayBuckets[diff].add(uniqueKey)
+    })
+
+    const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+    return dayBuckets.map((bucket, index) => {
+      const date = new Date(startOfWeek)
+      date.setDate(startOfWeek.getDate() + index)
+
+      const isFuture = date.getTime() > today.getTime()
+      const interactions = bucket.size
+
+      let status = 'Pending'
+      let colorClass = isFuture ? 'text-slate-300' : 'text-slate-400'
+
+      if (!isFuture) {
+        if (interactions >= 2) {
+          status = 'Completed'
+          colorClass = 'text-emerald-600'
+        } else if (interactions === 1) {
+          status = 'Halfway'
+          colorClass = 'text-orange-500'
+        }
+      }
+
+      return {
+        label: `Day ${index + 1}`,
+        dayName: dayLabels[index],
+        status,
+        colorClass,
+        isFuture,
+      }
+    })
+  }, [chatActivity.conversations])
 
   if (loading) {
     return (
@@ -199,7 +341,7 @@ export default function Dashboard() {
             <div key={card.title} className="card relative overflow-hidden">
               <span className="absolute -right-4 -top-4 text-6xl opacity-10">{card.icon}</span>
               <div className="flex items-start justify-between">
-                <p className="text-sm font-medium text-slate-500">{card.title}</p>
+                <p className="text-lg font-semibold text-slate-800">{card.title}</p>
                 <span className="text-2xl">{card.icon}</span>
               </div>
               <p className="mt-4 text-4xl font-bold text-slate-900">{card.value}</p>
@@ -208,35 +350,7 @@ export default function Dashboard() {
           ))}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-3">
-          <div className="card lg:col-span-2">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-2xl font-semibold text-slate-900">Upcoming Sessions</h2>
-              <button className="btn-primary sm:w-auto" onClick={() => toast('Scheduling coming soon!')}>
-                Schedule New Session
-              </button>
-            </div>
-            <div className="mt-6 space-y-4">
-              {upcomingSessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-slate-100/80 bg-slate-50/60 p-5 transition hover:border-primary-200 hover:bg-white"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-primary-600">{session.date}</p>
-                      <h3 className="text-lg font-semibold text-slate-900">{session.focus}</h3>
-                      <p className="text-sm text-slate-600">With {session.partner}</p>
-                    </div>
-                    <span className="inline-flex h-8 items-center justify-center rounded-full bg-white px-3 text-sm font-semibold text-primary-600 shadow-sm">
-                      {session.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        <section className="grid gap-6 lg:grid-cols-2">
           <div className="card">
             <h2 className="text-2xl font-semibold text-slate-900">Quick Actions</h2>
             <p className="mt-2 text-sm text-slate-500">
@@ -262,9 +376,50 @@ export default function Dashboard() {
               <button onClick={() => navigate('/conversations')} className="btn-secondary w-full">
                 💬 My Conversations
               </button>
-              <button onClick={() => navigate('/matches')} className="btn-secondary w-full">
+              <button onClick={() => navigate('/view-matches')} className="btn-secondary w-full">
                 👥 View All Matches
               </button>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold text-slate-900">Chat Momentum</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Stay connected by re-engaging with recent conversations.
+                </p>
+              </div>
+              <button onClick={() => navigate('/conversations')} className="btn-secondary sm:w-auto">
+                💬 Go to Inbox
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {chatActivity.lastInteractionAt ? (
+                <div className="rounded-2xl border border-primary-100/70 bg-primary-50/50 p-5 text-slate-800">
+                  <p className="text-sm uppercase tracking-wide text-primary-600">Last chat touchpoint</p>
+                  <p className="mt-2 text-lg font-semibold">
+                    {formatRelativeTime(chatActivity.lastInteractionAt)}
+                  </p>
+                  {chatActivity.partnerName && (
+                    <p className="text-sm text-slate-600">
+                      With <span className="font-semibold text-slate-800">{chatActivity.partnerName}</span>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-600">
+                  No recent chat activity yet. Start a conversation to get momentum going!
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-slate-100 bg-white/90 p-5 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">Pro tip</p>
+                <p className="mt-2">
+                  Aim for at least one check-in per week with each active match to keep learning energy strong.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -289,19 +444,35 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="card bg-gradient-to-br from-primary-50 to-white">
-            <h2 className="text-xl font-semibold text-slate-900">Weekly Focus</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Keep your streak alive by completing at least two micro-sessions each day.
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Weekly Focus</h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  Keep your streak alive by completing at least two micro-sessions each day.
+                </p>
+              </div>
+              {chatActivity.lastInteractionAt && (
+                <div className="rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-primary-700">
+                  Last chat {formatRelativeTime(chatActivity.lastInteractionAt)}
+                </div>
+              )}
+            </div>
+
+            {!chatActivity.lastInteractionAt && (
+              <div className="mt-4 rounded-2xl border border-dashed border-primary-200 bg-white/80 p-4 text-sm text-primary-700">
+                Haven’t chatted lately? Say hi in your inbox to kick-start a new learning streak.
+              </div>
+            )}
+
             <div className="mt-6 space-y-4">
-              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+              {weeklyFocusDays.map((day) => (
                 <div
-                  key={day}
+                  key={day.label}
                   className="flex items-center justify-between rounded-xl bg-white/80 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
                 >
-                  <span>Day {day}</span>
-                  <span className={day <= activeMatches ? 'text-primary-600' : 'text-slate-400'}>
-                    {day <= activeMatches ? 'Completed' : 'Pending'}
+                  <span>{day.label} · {day.dayName}</span>
+                  <span className={`${day.colorClass} font-semibold`}>
+                    {day.status}
                   </span>
                 </div>
               ))}
@@ -317,7 +488,7 @@ export default function Dashboard() {
                 Peek at the latest connections the AI lined up for you.
               </p>
             </div>
-            <button onClick={() => navigate('/matches')} className="btn-primary sm:w-auto">
+            <button onClick={() => navigate('/view-matches')} className="btn-primary sm:w-auto">
               Manage Matches
             </button>
           </div>
@@ -344,7 +515,7 @@ export default function Dashboard() {
                         <h3 className="text-lg font-semibold text-slate-900">{partnerName}</h3>
                         <p className="text-sm text-slate-500 capitalize">Status: {match.status || 'pending'}</p>
                       </div>
-                      <button onClick={() => navigate('/matches')} className="btn-secondary sm:w-auto">
+                      <button onClick={() => navigate('/view-matches')} className="btn-secondary sm:w-auto">
                         View Conversation
                       </button>
                     </div>

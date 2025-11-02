@@ -14,11 +14,20 @@ if (!apiKey) {
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
 
-// Text generation model
-export const textModel = genAI ? genAI.getGenerativeModel({ model: 'gemini-pro' }) : null
+// Text generation model - using gemini-2.0-flash (stable, fast, available in v1 API)
+export const textModel = genAI ? genAI.getGenerativeModel({
+  model: 'gemini-2.0-flash-exp',  // Fastest model available
+  generationConfig: {
+    temperature: 0.7,
+    topP: 0.8,
+    topK: 40
+  }
+}) : null
 
-// Embedding model
-export const embeddingModel = genAI ? genAI.getGenerativeModel({ model: 'embedding-001' }) : null
+// Embedding model with stable API configuration
+export const embeddingModel = genAI ? genAI.getGenerativeModel({
+  model: 'text-embedding-004'  // Current embedding model
+}) : null
 
 // Generate embeddings for text
 export async function generateEmbedding(text) {

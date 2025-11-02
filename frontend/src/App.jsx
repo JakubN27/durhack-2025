@@ -6,12 +6,14 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
+import ProfileView from './pages/ProfileView'
 import Matches from './pages/Matches'
 import Chat from './pages/Chat'
 import Conversations from './pages/Conversations'
 import Dashboard from './pages/Dashboard'
 import Debug from './pages/Debug'
 import Legacy from './pages/Legacy'
+import ViewMatches from './pages/ViewMatches'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -85,8 +87,16 @@ function App() {
             element={session ? <Profile /> : <Navigate to="/login" />}
           />
           <Route
+            path="profile/:userId"
+            element={session ? <ProfileView /> : <Navigate to="/login" />}
+          />
+          <Route
             path="matches"
             element={session ? <Matches /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="view-matches"
+            element={session ? <ViewMatches /> : <Navigate to="/login" />}
           />
           <Route
             path="conversations"

@@ -83,7 +83,7 @@ export default function Matches() {
           // New match created
           toast.success(`Match created! Opening chat...`)
         }
-        
+
         // Navigate to chat
         setTimeout(() => {
           navigate(`/chat/${data.match.id}`)
@@ -131,7 +131,7 @@ export default function Matches() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Find Your Perfect Match 🎯</h1>
-        <p className="text-gray-600">
+        <p className="text-white/80">
           Discover people who can teach you what you want to learn, and learn from what you can teach
         </p>
       </div>
@@ -166,7 +166,7 @@ export default function Matches() {
 
       {/* Matches Count */}
       {potentialMatches.length > 0 && (
-        <div className="mb-4 text-gray-600">
+        <div className="mb-4 text-white/80">
           Showing {potentialMatches.length} potential {potentialMatches.length === 1 ? 'match' : 'matches'}
         </div>
       )}
@@ -175,13 +175,13 @@ export default function Matches() {
       {searching ? (
         <div className="text-center py-12">
           <div className="text-4xl mb-4">🔍</div>
-          <p className="text-xl text-gray-600">Finding your perfect matches...</p>
+          <p className="text-xl text-white/80">Finding your perfect matches...</p>
         </div>
       ) : potentialMatches.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔍</div>
-          <p className="text-xl text-gray-600 mb-2">No matches found yet</p>
-          <p className="text-gray-500">Complete your profile and add skills to get matched!</p>
+          <p className="text-xl text-white/80 mb-2">No matches found yet</p>
+          <p className="text-white/70">Complete your profile and add skills to get matched!</p>
           <button
             onClick={() => window.location.href = '/profile'}
             className="btn-primary mt-4"
@@ -198,14 +198,19 @@ export default function Matches() {
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+                <a 
+                  href={`/profile/${match.user_id}`}
+                  className="flex items-center gap-3 hover:opacity-80 transition"
+                >
                   <img
                     src={match.avatar_url || `https://ui-avatars.com/api/?name=${match.user_name}&size=200`}
                     alt={match.user_name}
-                    className="w-12 h-12 rounded-full"
+                    className="w-12 h-12 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="text-lg font-semibold">{match.user_name}</h3>
+                    <h3 className="text-lg font-semibold hover:text-primary-600 transition">
+                      {match.user_name}
+                    </h3>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">Match Score:</span>
                       <span className="font-bold text-primary-600">
@@ -213,12 +218,42 @@ export default function Matches() {
                       </span>
                     </div>
                   </div>
-                </div>
+                </a>
               </div>
 
               {/* Bio */}
               {match.user_bio && (
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{match.user_bio}</p>
+              )}
+
+              {/* AI Compatibility Insights */}
+              {match.compatibility_breakdown?.insights && match.compatibility_breakdown.insights.length > 0 && (
+                <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                  <h4 className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                    <span>🤖</span>
+                    <span>AI Compatibility Insights</span>
+                    {match.compatibility_breakdown.recommendation === 'strong' && (
+                      <span className="ml-auto px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
+                        Highly Recommended
+                      </span>
+                    )}
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {match.compatibility_breakdown.insights.slice(0, 2).map((insight, idx) => (
+                      <li key={idx} className="text-sm text-purple-900 flex items-start gap-2">
+                        <span className="text-purple-400 mt-0.5">•</span>
+                        <span>{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {match.compatibility_breakdown.challenges && match.compatibility_breakdown.challenges.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-purple-200">
+                      <p className="text-xs text-purple-700">
+                        <strong>Note:</strong> {match.compatibility_breakdown.challenges[0]}
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Mutual Skills */}

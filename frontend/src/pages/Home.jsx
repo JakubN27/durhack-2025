@@ -13,11 +13,13 @@ export default function Home() {
           <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1 text-sm font-semibold uppercase tracking-[0.3em] text-white/80">
             Skill Exchange Reinvented
           </span>
-          <h1 className="text-5xl md:text-6xl font-semibold leading-tight">
-            Grow faster with curated, AI-powered mentorship
+          <h1 className="text-5xl md:text-6xl font-semibold leading-tight text-white flex justify-center">
+            <span className="inline-block px-6 bg-gradient-to-r from-primary-100 via-white to-primary-200 bg-clip-text text-transparent italic">
+              “Your legacy is the knowledge you leave behind”
+            </span>
           </h1>
-          <p className="mx-auto max-w-2xl text-lg md:text-xl text-white/80">
-            SkillSwap matches you with peers who complement your strengths, helps you coach like a pro, and keeps momentum with intelligent nudges.
+          <p className="mx-auto max-w-2xl text-lg md:text-xl text-white/90 font-semibold">
+            SkillSwap pairs peers for reciprocal, AI-guided skill exchanges.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button

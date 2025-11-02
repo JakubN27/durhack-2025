@@ -1,343 +1,311 @@
-# SkillSwap 🎓✨
+# SkillSwap Documentation Hub
 
-**AI-Powered Peer-to-Peer Learning Platform** - Learn from others, teach what you know.
-
-Built for DurHack 2025 🚀
+**Last Updated:** November 2, 2025
 
 ---
 
-## 🌟 Features
+## 📚 Essential Documentation
 
-- **🎯 Smart Matching** - Reciprocal skill-based matching algorithm
-- **🔍 Search & Discovery** - Find learning partners by specific skills
-- **👤 Profile Management** - Organize skills by category and proficiency
-- **💬 Real-time Chat** - Integrated TalkJS chat for matched users
-- **📬 Conversations Inbox** - View and manage all your chats in one place
-- **🤝 Mutual Skills Display** - See what you can learn from each other
-- **🤖 AI Features** - Skill extraction and learning plans with Gemini
-- **📊 Match Scores** - See compatibility percentage with each match
+This documentation is organized into **13 comprehensive guides** for easy navigation:
 
----
+### 🚀 Quick Start
+- **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes
 
-## 🏗️ Tech Stack
+### 📖 Core Guides
+- **[OVERVIEW.md](./OVERVIEW.md)** - Project overview, features, tech stack
+- **[SETUP.md](./SETUP.md)** - Complete setup instructions
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture and data flow
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Development workflow and guidelines
 
-**Frontend:**
-- React 19 + Vite
-- TailwindCSS for styling
-- React Router for navigation
-- React Hot Toast for notifications
-- TalkJS for real-time chat
+### 🔧 Technical References
+- **[API_REFERENCE.md](./API_REFERENCE.md)** - Complete API documentation
+- **[DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)** - Database structure and relationships
+- **[GEMINI_INTEGRATION.md](./GEMINI_INTEGRATION.md)** - AI features and setup
 
-**Backend:**
-- Node.js + Express
-- Supabase (PostgreSQL + Auth)
-- Google Gemini AI
+### 🚀 [QUICKSTART.md](./QUICKSTART.md)
+**Get Running in 5 Minutes**
+- Rapid setup guide
+- Environment configuration
+- Database initialization
+- Quick testing
+- First user setup
 
-**Database:**
-- PostgreSQL with Supabase
-- JSONB for flexible skill storage
-- Row Level Security (RLS)
+👉 **Start here** for the fastest path to a working system!
 
 ---
 
-## 🚀 Quick Start
+### 🛠️ [SETUP.md](./SETUP.md)
+**Complete Setup Guide**
+- Prerequisites and requirements
+- Detailed installation instructions
+- Environment configuration
+- Database setup and migrations
+- Service configuration (Supabase, TalkJS, Gemini)
+- Verification steps
+- Common setup issues and fixes
 
-### Prerequisites
-- Node.js 22+ (or 20.19+)
-- npm or pnpm
-- Supabase account
-- Gemini API key (optional)
+👉 **Use this** for detailed setup instructions!
 
-### 1. Install Dependencies
+---
+
+### 🏛️ [ARCHITECTURE.md](./ARCHITECTURE.md)
+**System Design & Technical Architecture**
+- System architecture diagrams
+- Component relationships
+- Data flow patterns
+- Technology choices and rationale
+- Database design philosophy
+- API design patterns
+- Frontend architecture
+- Security considerations
+
+👉 **Read this** to understand system design!
+
+---
+
+### 💻 [DEVELOPMENT.md](./DEVELOPMENT.md)
+**Development Workflow & Guidelines**
+- Project structure
+- Development workflow
+- Code organization
+- Testing approach
+- Git workflow
+- Deployment process
+- Contributing guidelines
+- Code style guide
+
+👉 **Follow this** for development best practices!
+
+---
+
+### 🐛 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+**Common Issues & Solutions**
+- Quick diagnostics
+- Port conflicts
+- Database connection errors
+- Chat and conversations issues
+- Authentication problems
+- API and backend debugging
+- Frontend debugging
+- Performance issues
+
+👉 **Check here** when something breaks!
+
+**SkillSwap** is a platform that connects people who want to exchange skills and knowledge. Think "language exchange" but for any skill.
+
+### 🌐 [API_REFERENCE.md](./API_REFERENCE.md)
+**Complete API Documentation**
+- All API endpoints
+- Request/response examples
+- Authentication flow
+- Error codes and handling
+- Rate limits
+- Testing with curl
+- User, matching, chat, and AI endpoints
+
+👉 **Reference this** when working with the API!
+
+---
+
+### 🗄️ [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
+**Database Structure & Relationships**
+- Table definitions
+- Column types and constraints
+- Indexes and performance
+- Relationships and foreign keys
+- JSONB structures
+- Storage buckets
+- Row Level Security policies
+- Example queries
+
+👉 **Consult this** for database work!
+
+---
+
+### 🌱 [SEEDING.md](./SEEDING.md)
+**Database Seeding & Test Data**
+- Seed script usage guide
+- Command-line options
+- Generated data details
+- 70+ skills across 5 categories
+- Realistic user profiles
+- Match generation
+- Performance metrics
+- Troubleshooting seed issues
+
+👉 **Use this** to populate test data!
+
+---
+
+### 🤖 [GEMINI_INTEGRATION.md](./GEMINI_INTEGRATION.md)
+**Google Gemini AI Integration**
+- Gemini API setup
+- Skill extraction process
+- Learning plan generation
+- Session summary creation
+- Motivational nudge feature
+- Error handling and fallback
+- Performance considerations
+
+👉 **Read this** if working with AI features!
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend:** React + Vite + TailwindCSS  
+**Backend:** Node.js + Express  
+**Database:** Supabase (PostgreSQL)  
+**AI:** Google Gemini  
+**Chat:** TalkJS  
+**Auth:** Supabase Auth  
+
+---
+
+## 🚀 Quick Setup (30 seconds)
 
 ```bash
-# Install all dependencies using npm workspaces (single command!)
+# 1. Clone and install
+git clone <repo>
+cd durhack-2025
 npm install
+
+# 2. Set up environment variables
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+# Edit both files with your API keys
+
+# 3. Run database migrations
+cd supabase
+# Apply migrations to your Supabase project
+
+# 4. Start development servers
+npm run dev
 ```
 
-This installs all dependencies for the root, backend, and frontend in a shared `node_modules` directory.
+Visit http://localhost:5174 (frontend) and backend runs on port 3000.
 
-### 2. Configure Environment
+---
 
-**Backend** (`backend/.env`):
-```bash
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_service_role_key
-GEMINI_API_KEY=your_gemini_key (optional)
+## 📊 Key Information
+
+### Database Tables
+- `users` - User profiles, skills, personality
+- `matches` - Skill exchange pairs
+- `conversations` - Chat conversations
+- `messages` - Chat message history (TalkJS)
+
+### Main API Endpoints
+- `POST /api/auth/signup` - Create account
+- `GET /api/matching/user/:id` - Get matches
+- `POST /api/matching/create` - Create match
+- `GET /api/chat/:matchId` - Get chat details
+
+### Environment Variables
+**Backend (.env):**
+```
+SUPABASE_URL=
+SUPABASE_SERVICE_KEY=
+GEMINI_API_KEY=
 PORT=3000
 ```
 
-**Frontend** (`frontend/.env.local`):
-```bash
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_API_URL=http://localhost:3000
-VITE_TALKJS_APP_ID=your_talkjs_app_id
-VITE_GEMINI_API_KEY=your_gemini_key (optional)
+**Frontend (.env.local):**
 ```
-
-> **Note**: Get your TalkJS App ID from [TalkJS Dashboard](https://talkjs.com/dashboard)
-
-### 3. Setup Database
-
-Run the migration in Supabase SQL Editor:
-```bash
-# Copy contents of supabase/migrations/20251101000000_initial_schema.sql
-# Paste into Supabase SQL Editor and run
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_TALKJS_APP_ID=
 ```
-
-### 4. Seed Test Data
-
-```bash
-# From project root
-npm run seed --workspace=backend
-
-# Or
-cd backend && npm run seed
-```
-
-This creates 6 test users with perfect reciprocal matches.
-
-### 5. Start Development
-
-```bash
-# From project root
-npm run dev
-```
-
-Opens:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
 
 ---
 
-## 📖 Usage
+## 🎓 How It Works
 
-### Test Users
+1. **User signs up** → Creates profile with skills
+2. **AI analyzes profile** → Extracts skills, generates embeddings
+3. **Matching algorithm runs** → Finds compatible partners
+4. **Users connect** → Create match and start chatting
+5. **Track progress** → Sessions, achievements, growth
 
-Login with any of these (any password works):
-- **alice@test.com** - React/JS expert ↔ wants Python/ML
-- **bob@test.com** - Python/ML expert ↔ wants React
-- **carol@test.com** - iOS expert ↔ wants Android/Node.js
-- **david@test.com** - Node.js expert ↔ wants iOS/Android
-- **emma@test.com** - Designer ↔ wants JavaScript
-- **frank@test.com** - DevOps ↔ wants Python/ML
-
-### Getting Started
-
-1. **Sign up** or use a test account
-2. **Complete your profile** - Add skills you can teach and want to learn
-3. **Find matches** - Click "Find New Matches" on dashboard
-4. **Browse matches** - Search for specific skills
-5. **Connect** - Click "Connect & Start Chat" on a match
-6. **Chat** - Start learning together in real-time!
-7. **Manage conversations** - View all chats in the Conversations page
+### Matching Formula (with AI)
+```
+40% Skill reciprocity (A teaches B, B teaches A)
+15% Bio compatibility (AI analysis)
+15% Learning style match (AI analysis)
+10% Basic personality traits
+10% AI personality synergy
+5%  Communication compatibility
+5%  Motivation alignment
+```
 
 ---
 
-## � How Matching Works
+## 📝 For Developers
 
-The matching algorithm calculates **reciprocal scores**:
-
-1. **Score A→B**: How well User A can teach what User B wants to learn
-2. **Score B→A**: How well User B can teach what User A wants to learn  
-3. **Match Score**: Average of both directions (0-100%)
-
-**Scoring:**
-- Exact skill name match: 100% weight
-- Category match: 30% weight
-- Partial name match: 70% weight
-
-**Example:**
-- Alice teaches React → Bob wants React ✅
-- Bob teaches Python → Alice wants Python ✅
-- **Match Score: 95%** 🎉
-
----
-
-## 📁 Project Structure
-
+### Project Structure
 ```
 durhack-2025/
-├── frontend/              # React + Vite frontend
-│   ├── src/
-│   │   ├── pages/        # Dashboard, Profile, Matches, etc.
-│   │   ├── components/   # Reusable components
-│   │   └── lib/          # Supabase client
-│   └── package.json
-├── backend/              # Express API
-│   ├── routes/          # API endpoints
-│   ├── services/        # Business logic (matching, AI)
-│   ├── config/          # Supabase & Gemini setup
-│   └── scripts/         # Database seeding
-├── supabase/            # Database migrations
-└── docs/                # Documentation
+├── backend/          # Express API server
+├── frontend/         # React + Vite app
+├── supabase/         # Database migrations
+└── docs/             # This documentation
 ```
 
----
+### Development Workflow
+1. Create feature branch
+2. Develop and test locally
+3. Run migrations if needed
+4. Create pull request
+5. Merge to main
 
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register user
-- `POST /api/auth/login` - Login user
-
-### Users
-- `GET /api/users` - List all users
-- `GET /api/users/:id` - Get user profile
-- `PUT /api/users/:id` - Update profile
-- `DELETE /api/users/:id` - Delete user
-
-### Matching
-- `GET /api/matching/find/:userId?limit=10` - Find matches
-- `POST /api/matching/create` - Create match
-- `GET /api/matching/user/:userId` - Get user's matches
-- `GET /api/matching/:matchId` - Get match details
-
-### AI (if Gemini configured)
-- `POST /api/ai/skill-extraction` - Extract skills from bio
-- `POST /api/ai/learning-plan` - Generate learning plan
-- `POST /api/ai/session-summary` - Session summary
-- `POST /api/ai/motivational-nudge` - Get motivation
-
-See `backend/API_DOCUMENTATION.md` for full details.
-
----
-
-## �️ Development
-
-### Available Scripts
-
+### Testing
 ```bash
-npm run dev              # Start both frontend & backend
-npm run dev:frontend     # Frontend only
-npm run dev:backend      # Backend only
-npm run install:all      # Install all dependencies
-npm run build            # Build frontend for production
-npm run clean            # Remove all node_modules
-npm run fresh-install    # Clean reinstall
-```
-
-### Backend Scripts
-
-```bash
-# From project root:
-npm run seed --workspace=backend   # Seed test data
-
-# Or from backend directory:
+# Backend tests
 cd backend
-npm run seed             # Seed test data
-npm run dev              # Start with hot reload
-npm start                # Production mode
+npm test
+
+# Frontend tests
+cd frontend
+npm test
 ```
 
 ---
 
-## 📚 Documentation
+## 🐛 Common Issues
 
-- `QUICK_START.md` - Getting started guide
-- `PROJECT_STRUCTURE.md` - Architecture explanation
-- `MATCHING_SYSTEM_GUIDE.md` - Matching algorithm details
-- `CHAT_FEATURE_GUIDE.md` - Real-time chat documentation
-- `WORKSPACE_SETUP.md` - npm workspaces guide
-- `backend/API_DOCUMENTATION.md` - API reference
-- `backend/TESTING_GUIDE.md` - Testing guide
-- `backend/SETUP.md` - Backend setup
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-This project was created for DurHack 2025.
-
----
-
-## 👥 Team
-
-- 3 Developers
-- 1 Designer
-
----
-
-## 🙏 Acknowledgments
-
-- DurHack 2025 organizers
-- Supabase for the awesome backend
-- Google Gemini for AI capabilities
-
----
-
-**Made with ❤️ at DurHack 2025**
-npm install
-```
-
-2. **Configure environment:**
+**Port 3000 in use?**
 ```bash
-cp frontend/.env.example frontend/.env.local
-# Edit .env.local with your Supabase and Gemini credentials
+lsof -ti:3000 | xargs kill -9
 ```
 
-3. **Run the app:**
-```bash
-npm run dev
-```
+**Supabase connection error?**
+- Check environment variables
+- Verify API keys are correct
+- Ensure migrations are applied
 
-Visit: http://localhost:3000
-
----
-
-## 📚 Documentation
-
-- **[Quick Start Guide](docs/QUICKSTART.md)** - Get up and running
-- **[Development Log](docs/DEVLOG.md)** - Progress tracking
-- **[Database Setup](docs/01_database_setup.md)** - Schema details
-- **[Frontend Setup](docs/03_frontend_setup.md)** - App structure
+**Gemini API errors?**
+- Check API key is valid
+- Verify rate limits (60 req/min free tier)
+- App works without Gemini (degraded matching)
 
 ---
 
-## 🎯 Current Status
+## 📞 Need Help?
 
-✅ **Completed:**
-- Database schema with pgvector
-- Frontend with auth & routing
-- Profile management
-- Basic UI/UX
-
-🚧 **In Progress:**
-- AI skill extraction
-- Matching algorithm
-- Real-time chat
-
-📋 **Planned:**
-- AI middleman features
-- Skill legacy visualization
-- Gamification system
+1. Check **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**
+2. Review **[ARCHITECTURE.md](./ARCHITECTURE.md)** for system design
+3. See **[API_REFERENCE.md](./API_REFERENCE.md)** for endpoint details
 
 ---
 
-## 🏆 Hackathon Goals
+## 📅 Version History
 
-Built in 36-48 hours for DurHack 2025, focusing on:
-- Innovative use of embedded AI (not chatbots)
-- Reciprocal skill matching
-- Social impact through knowledge sharing
-
----
-
-## 📄 License
-
-MIT License - DurHack 2025
+- **v1.0** (Nov 2025) - Initial release with all core features
+- **v1.1** (Nov 2025) - Improved AI matching algorithm
+- **v1.2** (Nov 2025) - Profile picture upload feature
 
 ---
 
-*Happy skill swapping! 🎓✨*
+**Status:** ✅ Production Ready  
+**Last Tested:** November 2, 2025  
+**Maintainer:** DurHack 2025 Team

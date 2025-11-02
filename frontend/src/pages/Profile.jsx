@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 
@@ -8,7 +9,36 @@ const profileTips = [
   'Be honest about your learning edges. Reciprocal matches rely on it.',
 ]
 
-const categories = ['Programming', 'Frontend', 'Backend', 'Mobile', 'AI', 'Design', 'DevOps', 'Database', 'Cloud', 'Other']
+const matchMomentumChecklist = [
+  'Add at least three skills you can teach and three you want to learn.',
+  'Update your bio with fresh wins so mentors see your current focus.',
+  'Set your availability in the daily rhythm field to help with scheduling.',
+]
+
+const skillTopics = [
+  'Programming',
+  'Web Development',
+  'Mobile Apps',
+  'Data Science',
+  'Cybersecurity',
+  'AI & Machine Learning',
+  'Cloud & DevOps',
+  'UI/UX Design',
+  'Graphic Design',
+  'Product Management',
+  'Business & Entrepreneurship',
+  'Marketing',
+  'Finance',
+  'Education & Teaching',
+  'Languages',
+  'Writing & Storytelling',
+  'Music',
+  'Performing Arts',
+  'Art & Crafts',
+  'Health & Wellness',
+  'Cooking & Culinary',
+  'Other',
+]
 const proficiencies = ['beginner', 'intermediate', 'advanced', 'expert']
 const personalityOptions = [
   { value: 'introvert', label: 'Introvert', emoji: '🧘' },
@@ -30,12 +60,35 @@ const formatLabel = (value = '') =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase())
 
+const defaultSkillTopic = 'Other'
+
+function findBestTopic(input) {
+  const query = input?.trim().toLowerCase()
+
+  if (!query) {
+    return null
+  }
+
+  const exactMatch = skillTopics.find((topic) => topic.toLowerCase() === query)
+  if (exactMatch) return exactMatch
+
+  const startsWithMatch = skillTopics.find((topic) => topic.toLowerCase().startsWith(query))
+  if (startsWithMatch) return startsWithMatch
+
+  const partialMatch = skillTopics.find((topic) => topic.toLowerCase().includes(query))
+  if (partialMatch) return partialMatch
+
+  return 'Other'
+}
+
 export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [profile, setProfile] = useState({
     name: '',
     bio: '',
+    avatar_url: '',
     teach_skills: [],
     learn_skills: [],
     favorite_ice_cream: '',
@@ -46,14 +99,19 @@ export default function Profile() {
   })
   const [newTeachSkill, setNewTeachSkill] = useState({
     name: '',
-    category: categories[0],
+    category: defaultSkillTopic,
     proficiency: proficiencies[0],
   })
   const [newLearnSkill, setNewLearnSkill] = useState({
     name: '',
-    category: categories[0],
+    category: defaultSkillTopic,
     proficiency: proficiencies[0],
   })
+  const [teachCategoryInput, setTeachCategoryInput] = useState('')
+  const [learnCategoryInput, setLearnCategoryInput] = useState('')
+
+  const teachCategorySuggestion = useMemo(() => findBestTopic(teachCategoryInput), [teachCategoryInput])
+  const learnCategorySuggestion = useMemo(() => findBestTopic(learnCategoryInput), [learnCategoryInput])
 
   useEffect(() => {
     getProfile()
@@ -75,6 +133,7 @@ export default function Profile() {
         setProfile((prev) => ({
           ...prev,
           ...result.data,
+          avatar_url: result.data.avatar_url || '',
           teach_skills: result.data.teach_skills || [],
           learn_skills: result.data.learn_skills || [],
           favorite_ice_cream: result.data.favorite_ice_cream || '',
@@ -100,11 +159,19 @@ export default function Profile() {
       return
     }
 
+    const matchedCategory = teachCategorySuggestion || defaultSkillTopic
+    const skillToAdd = {
+      ...newTeachSkill,
+      category: matchedCategory,
+      name: newTeachSkill.name.trim(),
+    }
+
     setProfile((prev) => ({
       ...prev,
-      teach_skills: [...(prev.teach_skills || []), newTeachSkill],
+      teach_skills: [...(prev.teach_skills || []), skillToAdd],
     }))
-    setNewTeachSkill({ name: '', category: categories[0], proficiency: proficiencies[0] })
+  setNewTeachSkill({ name: '', category: defaultSkillTopic, proficiency: proficiencies[0] })
+  setTeachCategoryInput('')
     toast.success('Skill added! Remember to save your profile.')
   }
 
@@ -114,12 +181,54 @@ export default function Profile() {
       return
     }
 
+    const matchedCategory = learnCategorySuggestion || defaultSkillTopic
+    const skillToAdd = {
+      ...newLearnSkill,
+      category: matchedCategory,
+      name: newLearnSkill.name.trim(),
+    }
+
     setProfile((prev) => ({
       ...prev,
-      learn_skills: [...(prev.learn_skills || []), newLearnSkill],
+      learn_skills: [...(prev.learn_skills || []), skillToAdd],
     }))
-    setNewLearnSkill({ name: '', category: categories[0], proficiency: proficiencies[0] })
+  setNewLearnSkill({ name: '', category: defaultSkillTopic, proficiency: proficiencies[0] })
+  setLearnCategoryInput('')
     toast.success('Skill added! Remember to save your profile.')
+  }
+
+  const handleTeachCategoryInputChange = (value) => {
+    setTeachCategoryInput(value)
+    const matched = findBestTopic(value)
+    setNewTeachSkill((prev) => ({ ...prev, category: matched || defaultSkillTopic }))
+  }
+
+  const handleLearnCategoryInputChange = (value) => {
+    setLearnCategoryInput(value)
+    const matched = findBestTopic(value)
+    setNewLearnSkill((prev) => ({ ...prev, category: matched || defaultSkillTopic }))
+  }
+
+  const handleTeachCategoryBlur = () => {
+    const matched = findBestTopic(teachCategoryInput)
+    if (matched) {
+      setTeachCategoryInput(matched)
+      setNewTeachSkill((prev) => ({ ...prev, category: matched }))
+    } else {
+      setTeachCategoryInput('')
+      setNewTeachSkill((prev) => ({ ...prev, category: defaultSkillTopic }))
+    }
+  }
+
+  const handleLearnCategoryBlur = () => {
+    const matched = findBestTopic(learnCategoryInput)
+    if (matched) {
+      setLearnCategoryInput(matched)
+      setNewLearnSkill((prev) => ({ ...prev, category: matched }))
+    } else {
+      setLearnCategoryInput('')
+      setNewLearnSkill((prev) => ({ ...prev, category: defaultSkillTopic }))
+    }
   }
 
   const handleRemoveTeachSkill = (index) => {
@@ -180,6 +289,75 @@ export default function Profile() {
     }
   }
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB')
+      return
+    }
+
+    try {
+      setUploadingImage(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Not authenticated')
+        return
+      }
+
+      // Create unique file name
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath)
+
+      // Update profile with new avatar URL
+      setProfile((prev) => ({
+        ...prev,
+        avatar_url: publicUrl
+      }))
+
+      toast.success('Profile picture uploaded! Remember to save your profile.')
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error('Failed to upload image')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setProfile((prev) => ({
+      ...prev,
+      avatar_url: ''
+    }))
+    toast.success('Profile picture removed! Remember to save your profile.')
+  }
+
   const profileCompletion = useMemo(() => {
     const fields = [profile.name, profile.bio, profile.teach_skills?.length, profile.learn_skills?.length]
     const completed = fields.filter((field) => {
@@ -233,9 +411,6 @@ export default function Profile() {
                   <h2 className="text-2xl font-semibold text-slate-900">Your story</h2>
                   <p className="mt-1 text-sm text-slate-600">What should the community know about you?</p>
                 </div>
-                <span className="rounded-full bg-primary-100/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-900">
-                  AI powered
-                </span>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -249,6 +424,54 @@ export default function Profile() {
                     placeholder="How should others call you?"
                     required
                   />
+                </div>
+
+                {/* Profile Picture Upload Section */}
+                <div className="md:col-span-2">
+                  <label className={fieldLabelClass}>Profile Picture</label>
+                  <div className="flex items-start gap-6">
+                    {/* Current Avatar */}
+                    <div className="relative">
+                      <img
+                        src={profile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&size=200`}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-primary-200"
+                      />
+                      {uploadingImage && (
+                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload Controls */}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex gap-3">
+                        <label className="btn-primary cursor-pointer text-center">
+                          {uploadingImage ? 'Uploading...' : 'Upload Photo'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                            className="hidden"
+                          />
+                        </label>
+                        {profile.avatar_url && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <p className={helperTextClass}>
+                        JPG, PNG or GIF. Max size 5MB. Your profile picture helps others recognize you.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">
@@ -351,17 +574,34 @@ export default function Profile() {
               </div>
             </div>
 
-            <aside className="card space-y-5">
-              <h2 className="text-xl font-semibold text-slate-900">Profile tips</h2>
-              <ul className="space-y-4 text-sm text-slate-600">
-                {profileTips.map((tip) => (
-                  <li key={tip}>- {tip}</li>
-                ))}
-              </ul>
-              <button type="button" className="btn-secondary w-full text-sm" onClick={() => toast('Preview coming soon!')}>
-                Preview public profile
-              </button>
-            </aside>
+            <div className="space-y-6 self-start">
+              <aside className="card space-y-4">
+                <h2 className="text-xl font-semibold text-slate-900">Profile tips</h2>
+                <ul className="space-y-4 text-sm text-slate-600">
+                  {profileTips.map((tip) => (
+                    <li key={tip}>- {tip}</li>
+                  ))}
+                </ul>
+                <button type="button" className="btn-secondary w-full text-sm" onClick={() => toast('Preview coming soon!')}>
+                  Preview public profile
+                </button>
+              </aside>
+
+              <div className="card space-y-4">
+                <h2 className="text-xl font-semibold text-slate-900">Match momentum</h2>
+                <p className="text-sm text-slate-600">
+                  Quick tune-ups that help your profile surface in the best partner searches.
+                </p>
+                <ul className="space-y-3 text-sm text-slate-600">
+                  {matchMomentumChecklist.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+                <Link to="/matches" className="btn-primary w-full text-center text-sm">
+                  Match now
+                </Link>
+              </div>
+            </div>
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
@@ -379,25 +619,51 @@ export default function Profile() {
                     <input
                       type="text"
                       placeholder="Skill name (e.g., React)"
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newTeachSkill.name}
-                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewTeachSkill((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                     />
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-slate-600">
+                        Start typing to pick a topic. Unlisted skills will be saved as Other.
+                      </p>
+                      <input
+                        type="text"
+                        list="teach-skill-topics"
+                        placeholder="Topic (start typing...)"
+                        className={`${fieldInputClass} text-sm`}
+                        value={teachCategoryInput}
+                        onChange={(e) => handleTeachCategoryInputChange(e.target.value)}
+                        onBlur={handleTeachCategoryBlur}
+                      />
+                      <datalist id="teach-skill-topics">
+                        {skillTopics.map((topic) => (
+                          <option key={`teach-topic-${topic}`} value={topic} />
+                        ))}
+                      </datalist>
+                      {teachCategoryInput.trim() ? (
+                        <p className="mt-1 text-xs text-slate-600">
+                          Suggested topic{' '}
+                          <span className="font-semibold text-slate-800">
+                            {teachCategorySuggestion || defaultSkillTopic}
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
                     <select
-                      className={fieldInputClass}
-                      value={newTeachSkill.category}
-                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, category: e.target.value })}
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newTeachSkill.proficiency}
-                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, proficiency: e.target.value })}
+                      onChange={(e) =>
+                        setNewTeachSkill((prev) => ({
+                          ...prev,
+                          proficiency: e.target.value,
+                        }))
+                      }
                     >
                       {proficiencies.map((level) => (
                         <option key={level} value={level}>
@@ -405,7 +671,11 @@ export default function Profile() {
                         </option>
                       ))}
                     </select>
-                    <button type="button" onClick={handleAddTeachSkill} className="btn-primary">
+                    <button
+                      type="button"
+                      onClick={handleAddTeachSkill}
+                      className="btn-primary w-full md:col-span-4"
+                    >
                       + Add
                     </button>
                   </div>
@@ -456,25 +726,51 @@ export default function Profile() {
                     <input
                       type="text"
                       placeholder="Skill name (e.g., Python)"
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newLearnSkill.name}
-                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewLearnSkill((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                     />
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-slate-600">
+                        Start typing to pick a topic. Unlisted skills will be saved as Other.
+                      </p>
+                      <input
+                        type="text"
+                        list="learn-skill-topics"
+                        placeholder="Topic (start typing...)"
+                        className={`${fieldInputClass} text-sm`}
+                        value={learnCategoryInput}
+                        onChange={(e) => handleLearnCategoryInputChange(e.target.value)}
+                        onBlur={handleLearnCategoryBlur}
+                      />
+                      <datalist id="learn-skill-topics">
+                        {skillTopics.map((topic) => (
+                          <option key={`learn-topic-${topic}`} value={topic} />
+                        ))}
+                      </datalist>
+                      {learnCategoryInput.trim() ? (
+                        <p className="mt-1 text-xs text-slate-600">
+                          Suggested topic{' '}
+                          <span className="font-semibold text-slate-800">
+                            {learnCategorySuggestion || defaultSkillTopic}
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
                     <select
-                      className={fieldInputClass}
-                      value={newLearnSkill.category}
-                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, category: e.target.value })}
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newLearnSkill.proficiency}
-                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, proficiency: e.target.value })}
+                      onChange={(e) =>
+                        setNewLearnSkill((prev) => ({
+                          ...prev,
+                          proficiency: e.target.value,
+                        }))
+                      }
                     >
                       {proficiencies.map((level) => (
                         <option key={level} value={level}>
@@ -482,7 +778,11 @@ export default function Profile() {
                         </option>
                       ))}
                     </select>
-                    <button type="button" onClick={handleAddLearnSkill} className="btn-primary">
+                    <button
+                      type="button"
+                      onClick={handleAddLearnSkill}
+                      className="btn-primary w-full md:col-span-4"
+                    >
                       + Add
                     </button>
                   </div>

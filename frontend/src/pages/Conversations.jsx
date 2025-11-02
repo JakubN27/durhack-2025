@@ -95,7 +95,7 @@ export default function Conversations() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center">
           <div className="text-4xl mb-4">💬</div>
-          <p className="text-xl text-gray-600">Loading conversations...</p>
+          <p className="text-xl text-white/80">Loading conversations...</p>
         </div>
       </div>
     )
@@ -106,7 +106,7 @@ export default function Conversations() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">💬 Conversations</h1>
-        <p className="text-gray-600">
+        <p className="text-white/80">
           Chat with your matches and start learning together
         </p>
       </div>
@@ -159,8 +159,7 @@ export default function Conversations() {
               return (
                 <div
                   key={match.id}
-                  className="card hover:shadow-lg transition-shadow cursor-pointer border-2 border-gray-100 hover:border-primary-300 relative"
-                  onClick={() => navigate(`/chat/${match.id}`)}
+                  className="card hover:shadow-lg transition-shadow border-2 border-gray-100 hover:border-primary-300 relative"
                 >
                   {/* Unread Badge */}
                   {match.unread_count > 0 && (
@@ -172,23 +171,30 @@ export default function Conversations() {
                   )}
                   
                   <div className="flex items-center gap-4">
-                    {/* Avatar */}
-                    <div className="relative">
+                    {/* Avatar - clickable to view profile */}
+                    <a
+                      href={`/profile/${otherUser?.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="relative flex-shrink-0 hover:opacity-80 transition"
+                    >
                       <img
                         src={otherUser?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser?.name || 'User')}&size=200`}
                         alt={otherUser?.name || 'User'}
-                        className="w-16 h-16 rounded-full flex-shrink-0"
+                        className="w-16 h-16 rounded-full object-cover"
                       />
                       {/* Online indicator - only show if explicitly online */}
                       {otherUser?.is_online && (
                         <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
                       )}
-                    </div>
+                    </a>
                     
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
+                    {/* Info - clickable to open chat */}
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => navigate(`/chat/${match.id}`)}
+                    >
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate hover:text-primary-600 transition">
                           {otherUser?.name || 'Unknown User'}
                         </h3>
                         {getStatusBadge(match.status)}
