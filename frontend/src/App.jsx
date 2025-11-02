@@ -11,6 +11,7 @@ import Chat from './pages/Chat'
 import Conversations from './pages/Conversations'
 import Dashboard from './pages/Dashboard'
 import Debug from './pages/Debug'
+import ViewMatches from './pages/ViewMatches'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -86,6 +87,10 @@ function App() {
           <Route
             path="matches"
             element={session ? <Matches /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="view-matches"
+            element={session ? <ViewMatches /> : <Navigate to="/login" />}
           />
           <Route
             path="conversations"

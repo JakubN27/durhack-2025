@@ -95,7 +95,7 @@ export default function Conversations() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center">
           <div className="text-4xl mb-4">💬</div>
-          <p className="text-xl text-gray-600">Loading conversations...</p>
+          <p className="text-xl text-white/80">Loading conversations...</p>
         </div>
       </div>
     )
@@ -106,7 +106,7 @@ export default function Conversations() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">💬 Conversations</h1>
-        <p className="text-gray-600">
+        <p className="text-white/80">
           Chat with your matches and start learning together
         </p>
       </div>
