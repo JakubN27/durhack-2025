@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node scripts/seedTestData.js"
+    "seed": "node seed.js",
+    "seed:clear": "node seed.js --clear",
+    "seed:large": "node seed.js --users 50 --min-connections 2 --max-connections 8 --clear"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

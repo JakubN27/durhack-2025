@@ -8,7 +8,7 @@ Built for DurHack 2025 🚀
 
 ## 📖 Documentation Structure
 
-This documentation is organized into **5 core files** for easy navigation:
+This documentation is organized into **13 comprehensive guides** for easy navigation:
 
 ### 🌟 [OVERVIEW.md](./OVERVIEW.md)
 **What is SkillSwap?**
@@ -23,63 +23,132 @@ This documentation is organized into **5 core files** for easy navigation:
 
 ---
 
-### 🛠️ [SETUP.md](./SETUP.md)
-**Getting Started**
-- Prerequisites and requirements
-- Installation instructions
+### 🚀 [QUICKSTART.md](./QUICKSTART.md)
+**Get Running in 5 Minutes**
+- Rapid setup guide
 - Environment configuration
-- Database setup
-- Running the application
+- Database initialization
+- Quick testing
+- First user setup
+
+👉 **Start here** for the fastest path to a working system!
+
+---
+
+### 🛠️ [SETUP.md](./SETUP.md)
+**Complete Setup Guide**
+- Prerequisites and requirements
+- Detailed installation instructions
+- Environment configuration
+- Database setup and migrations
+- Service configuration (Supabase, TalkJS, Gemini)
+- Verification steps
 - Common setup issues and fixes
 
-👉 **Start here** to get SkillSwap running locally!
+👉 **Use this** for detailed setup instructions!
 
 ---
 
 ### 🏛️ [ARCHITECTURE.md](./ARCHITECTURE.md)
-**Technical Deep Dive**
-- Database schema and relationships
-- API architecture and endpoints
-- Matching algorithm explained
-- Chat integration with TalkJS
-- AI features (Gemini integration)
-- Security and authentication
-- Performance optimizations
-- State management
-- Testing strategy
+**System Design & Technical Architecture**
+- System architecture diagrams
+- Component relationships
+- Data flow patterns
+- Technology choices and rationale
+- Database design philosophy
+- API design patterns
+- Frontend architecture
+- Security considerations
 
-👉 **Read this** to understand how everything works!
+👉 **Read this** to understand system design!
 
 ---
 
-### 🔧 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
-**Problem Solving Guide**
+### 💻 [DEVELOPMENT.md](./DEVELOPMENT.md)
+**Development Workflow & Guidelines**
+- Project structure
+- Development workflow
+- Code organization
+- Testing approach
+- Git workflow
+- Deployment process
+- Contributing guidelines
+- Code style guide
+
+👉 **Follow this** for development best practices!
+
+---
+
+### 🐛 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+**Common Issues & Solutions**
 - Quick diagnostics
-- Common issues and solutions
-- Database troubleshooting
+- Port conflicts
+- Database connection errors
 - Chat and conversations issues
 - Authentication problems
-- API and backend issues
+- API and backend debugging
 - Frontend debugging
-- Development environment fixes
+- Performance issues
 
 👉 **Check here** when something breaks!
 
 ---
 
-### 👥 [DEVELOPMENT.md](./DEVELOPMENT.md)
-**Team Workflow & Standards**
-- Team structure and roles
-- Development workflow
-- Git and version control
-- Project structure
-- Development phases
-- Task management
-- Code standards
-- Testing guidelines
-- Deployment checklist
+### 🌐 [API_REFERENCE.md](./API_REFERENCE.md)
+**Complete API Documentation**
+- All API endpoints
+- Request/response examples
+- Authentication flow
+- Error codes and handling
+- Rate limits
+- Testing with curl
+- User, matching, chat, and AI endpoints
 
-👉 **Follow this** for team coordination and best practices!
+👉 **Reference this** when working with the API!
+
+---
+
+### 🗄️ [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
+**Database Structure & Relationships**
+- Table definitions
+- Column types and constraints
+- Indexes and performance
+- Relationships and foreign keys
+- JSONB structures
+- Storage buckets
+- Row Level Security policies
+- Example queries
+
+👉 **Consult this** for database work!
+
+---
+
+### 🌱 [SEEDING.md](./SEEDING.md)
+**Database Seeding & Test Data**
+- Seed script usage guide
+- Command-line options
+- Generated data details
+- 70+ skills across 5 categories
+- Realistic user profiles
+- Match generation
+- Performance metrics
+- Troubleshooting seed issues
+
+👉 **Use this** to populate test data!
+
+---
+
+### 🤖 [GEMINI_INTEGRATION.md](./GEMINI_INTEGRATION.md)
+**Google Gemini AI Integration**
+- Gemini API setup
+- Skill extraction process
+- Learning plan generation
+- Session summary creation
+- Motivational nudge feature
+- Error handling and fallback
+- Performance considerations
+
+👉 **Read this** if working with AI features!
 
 ---
 
