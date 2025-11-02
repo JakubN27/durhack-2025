@@ -335,6 +335,36 @@ export default function Matches() {
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{match.user_bio}</p>
               )}
 
+              {/* AI Compatibility Insights */}
+              {match.compatibility_breakdown?.insights && match.compatibility_breakdown.insights.length > 0 && (
+                <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                  <h4 className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                    <span>🤖</span>
+                    <span>AI Compatibility Insights</span>
+                    {match.compatibility_breakdown.recommendation === 'strong' && (
+                      <span className="ml-auto px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
+                        Highly Recommended
+                      </span>
+                    )}
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {match.compatibility_breakdown.insights.slice(0, 2).map((insight, idx) => (
+                      <li key={idx} className="text-sm text-purple-900 flex items-start gap-2">
+                        <span className="text-purple-400 mt-0.5">•</span>
+                        <span>{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {match.compatibility_breakdown.challenges && match.compatibility_breakdown.challenges.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-purple-200">
+                      <p className="text-xs text-purple-700">
+                        <strong>Note:</strong> {match.compatibility_breakdown.challenges[0]}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Mutual Skills */}
               {match.mutual_skills && match.mutual_skills.length > 0 && (
                 <div className="mb-4 p-3 bg-green-50 rounded-lg">
