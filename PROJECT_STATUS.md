@@ -3,6 +3,8 @@
 **Last Updated:** November 2, 2025  
 **Status:** ✅ All Tasks Complete
 
+> 📝 **Documentation Update (Nov 2, 2025):** All documentation has been consolidated into a single comprehensive `README.md` at the project root. Original detailed docs are archived in `docs_archive/` for reference.
+
 ---
 
 ## ✅ Completed Tasks

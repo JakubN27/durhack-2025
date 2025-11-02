@@ -15,20 +15,6 @@ export default function Matches() {
     loadUser()
   }, [])
 
-  // Auto-refresh matches when page becomes visible (e.g., after updating profile)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && user) {
-        findMatches(user.id)
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [user])
-
   const loadUser = async () => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -109,10 +95,6 @@ export default function Matches() {
       console.error('Error creating match:', error)
       toast.error('Failed to create match')
     }
-  }
-
-  const handleOpenExistingMatch = (matchId) => {
-    navigate(`/chat/${matchId}`)
   }
 
   const handleSearch = async () => {

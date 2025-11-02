@@ -1,6 +1,6 @@
 # SkillSwap Documentation Hub
 
-**Last Updated:** November 2, 2025
+**Last Updated:** October 2023
 
 ---
 
@@ -21,6 +21,7 @@ This documentation is organized into **13 comprehensive guides** for easy naviga
 - **[API_REFERENCE.md](./API_REFERENCE.md)** - Complete API documentation
 - **[DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)** - Database structure and relationships
 - **[GEMINI_INTEGRATION.md](./GEMINI_INTEGRATION.md)** - AI features and setup
+- **[MATCHING_ALGORITHM.md](./MATCHING_ALGORITHM.md)** - AI-powered matching logic
 
 ### 🚀 [QUICKSTART.md](./QUICKSTART.md)
 **Get Running in 5 Minutes**
@@ -73,6 +74,7 @@ This documentation is organized into **13 comprehensive guides** for easy naviga
 - Deployment process
 - Contributing guidelines
 - Code style guide
+- Dashboard features and metrics
 
 👉 **Follow this** for development best practices!
 

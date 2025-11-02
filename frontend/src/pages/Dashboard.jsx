@@ -166,8 +166,9 @@ export default function Dashboard() {
   }
 
   const activeMatches = useMemo(() => {
-    const activeStatuses = new Set(['active', 'accepted'])
-    return matches.filter((m) => activeStatuses.has((m.status || '').toLowerCase())).length
+    // Count all matches - a match exists if it's in the database
+    // Status can be: pending, active, accepted, or other values
+    return matches.length
   }, [matches])
   const totalSkillsTaught = profile?.teach_skills?.length || 0
   const totalSkillsToLearn = profile?.learn_skills?.length || 0
@@ -186,7 +187,11 @@ export default function Dashboard() {
     {
       title: 'Active Matches',
       value: activeMatches,
-      change: `${matches.length} total connections`,
+      change: activeMatches === 0 
+        ? 'Find your first match' 
+        : activeMatches === 1 
+        ? '1 connection' 
+        : `${activeMatches} connections`,
       icon: '🤝',
     },
     {
@@ -263,33 +268,73 @@ export default function Dashboard() {
       dayBuckets[diff].add(uniqueKey)
     })
 
-    const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const fullDayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
     return dayBuckets.map((bucket, index) => {
       const date = new Date(startOfWeek)
       date.setDate(startOfWeek.getDate() + index)
 
+      const isToday = date.getTime() === today.getTime()
       const isFuture = date.getTime() > today.getTime()
       const interactions = bucket.size
 
-      let status = 'Pending'
-      let colorClass = isFuture ? 'text-slate-300' : 'text-slate-400'
+      let status = 'No activity'
+      let icon = '⚪'
+      let colorClass = 'text-slate-400 bg-slate-100'
+      let bgClass = 'bg-slate-50/50'
 
-      if (!isFuture) {
+      if (isFuture) {
+        status = 'Upcoming'
+        icon = '⏳'
+        colorClass = 'text-slate-300 bg-slate-50'
+        bgClass = 'bg-slate-50/30'
+      } else if (isToday) {
+        if (interactions >= 2) {
+          status = '✓ Goal reached!'
+          icon = '🎉'
+          colorClass = 'text-emerald-600 bg-emerald-100'
+          bgClass = 'bg-emerald-50/70'
+        } else if (interactions === 1) {
+          status = '1 more to go'
+          icon = '💪'
+          colorClass = 'text-orange-600 bg-orange-100'
+          bgClass = 'bg-orange-50/70'
+        } else {
+          status = 'Start today'
+          icon = '🎯'
+          colorClass = 'text-blue-600 bg-blue-100'
+          bgClass = 'bg-blue-50/70'
+        }
+      } else {
         if (interactions >= 2) {
           status = 'Completed'
-          colorClass = 'text-emerald-600'
+          icon = '✅'
+          colorClass = 'text-emerald-600 bg-emerald-100'
+          bgClass = 'bg-emerald-50/50'
         } else if (interactions === 1) {
-          status = 'Halfway'
-          colorClass = 'text-orange-500'
+          status = 'Partial'
+          icon = '📍'
+          colorClass = 'text-orange-600 bg-orange-100'
+          bgClass = 'bg-orange-50/50'
+        } else {
+          status = 'Missed'
+          icon = '○'
+          colorClass = 'text-slate-400 bg-slate-100'
+          bgClass = 'bg-slate-50/30'
         }
       }
 
       return {
-        label: `Day ${index + 1}`,
-        dayName: dayLabels[index],
+        label: dayLabels[index],
+        fullLabel: fullDayLabels[index],
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         status,
+        icon,
         colorClass,
+        bgClass,
+        interactions,
+        isToday,
         isFuture,
       }
     })
@@ -396,21 +441,31 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-6 space-y-4">
-              {chatActivity.lastInteractionAt ? (
+              {chatActivity.conversations.length > 0 ? (
                 <div className="rounded-2xl border border-primary-100/70 bg-primary-50/50 p-5 text-slate-800">
-                  <p className="text-sm uppercase tracking-wide text-primary-600">Last chat touchpoint</p>
-                  <p className="mt-2 text-lg font-semibold">
-                    {formatRelativeTime(chatActivity.lastInteractionAt)}
-                  </p>
-                  {chatActivity.partnerName && (
-                    <p className="text-sm text-slate-600">
-                      With <span className="font-semibold text-slate-800">{chatActivity.partnerName}</span>
-                    </p>
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm uppercase tracking-wide text-primary-600">Active Conversations</p>
+                    <span className="text-2xl font-bold text-primary-700">
+                      {chatActivity.conversations.length}
+                    </span>
+                  </div>
+                  {chatActivity.lastInteractionAt && (
+                    <>
+                      <p className="text-sm uppercase tracking-wide text-slate-500">Last chat touchpoint</p>
+                      <p className="mt-1 text-lg font-semibold">
+                        {formatRelativeTime(chatActivity.lastInteractionAt)}
+                      </p>
+                      {chatActivity.partnerName && (
+                        <p className="text-sm text-slate-600">
+                          With <span className="font-semibold text-slate-800">{chatActivity.partnerName}</span>
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-600">
-                  No recent chat activity yet. Start a conversation to get momentum going!
+                  No conversations yet. Create a match to start chatting!
                 </div>
               )}
 
@@ -424,8 +479,101 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-3">
-          <div className="card lg:col-span-2">
+        <section className="space-y-6">
+          <div className="card bg-gradient-to-br from-primary-50 to-white">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Weekly Focus</h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  Goal: At least 2 chat interactions per day to keep your learning streak alive
+                </p>
+              </div>
+              {chatActivity.lastInteractionAt && (
+                <div className="rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-primary-700 shadow-sm">
+                  Last: {formatRelativeTime(chatActivity.lastInteractionAt)}
+                </div>
+              )}
+            </div>
+
+            {!chatActivity.lastInteractionAt && (
+              <div className="mt-4 rounded-2xl border border-dashed border-primary-200 bg-white/80 p-4 text-sm text-primary-700">
+                💡 Haven't chatted lately? Say hi in your inbox to kick-start a new learning streak!
+              </div>
+            )}
+
+            <div className="mt-6 space-y-3">
+              {weeklyFocusDays.map((day) => (
+                <div
+                  key={day.label}
+                  className={`relative overflow-hidden rounded-xl border transition-all duration-200 ${
+                    day.isToday 
+                      ? 'border-primary-300 shadow-md' 
+                      : 'border-slate-200 shadow-sm hover:border-slate-300'
+                  } ${day.bgClass}`}
+                >
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-full text-lg ${day.colorClass} shadow-sm`}>
+                        {day.icon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {day.fullLabel}
+                          {day.isToday && <span className="ml-2 text-xs text-primary-600">(Today)</span>}
+                        </p>
+                        <p className="text-xs text-slate-500">{day.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-slate-700">
+                          {day.interactions} {day.interactions === 1 ? 'chat' : 'chats'}
+                        </p>
+                        <p className="text-xs text-slate-500">{day.status}</p>
+                      </div>
+                      {day.interactions >= 2 && !day.isFuture && (
+                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      )}
+                    </div>
+                  </div>
+                  {day.isToday && day.interactions < 2 && (
+                    <div className="border-t border-primary-200/50 bg-primary-100/30 px-4 py-2 text-xs text-primary-700">
+                      💪 {day.interactions === 0 ? 'Start your day with 2 chats!' : '1 more chat to reach today\'s goal!'}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">📊</span>
+                <p className="font-semibold text-slate-900">Week Summary</p>
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-emerald-600">
+                    {weeklyFocusDays.filter(d => !d.isFuture && d.interactions >= 2).length}
+                  </p>
+                  <p className="text-xs text-slate-500">Days completed</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {weeklyFocusDays.filter(d => !d.isFuture && d.interactions === 1).length}
+                  </p>
+                  <p className="text-xs text-slate-500">Days partial</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-600">
+                    {weeklyFocusDays.filter(d => !d.isFuture && d.interactions === 0).length}
+                  </p>
+                  <p className="text-xs text-slate-500">Days missed</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold text-slate-900">Progress Highlights</h2>
               <span className="text-xs font-semibold uppercase tracking-wide text-primary-500">Auto-insights</span>
@@ -439,41 +587,6 @@ export default function Dashboard() {
                   <p className="text-xs font-semibold uppercase tracking-wide text-primary-500">{item.metric}</p>
                   <h3 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h3>
                   <p className="mt-3 text-sm text-slate-600">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="card bg-gradient-to-br from-primary-50 to-white">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">Weekly Focus</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Keep your streak alive by completing at least two micro-sessions each day.
-                </p>
-              </div>
-              {chatActivity.lastInteractionAt && (
-                <div className="rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-primary-700">
-                  Last chat {formatRelativeTime(chatActivity.lastInteractionAt)}
-                </div>
-              )}
-            </div>
-
-            {!chatActivity.lastInteractionAt && (
-              <div className="mt-4 rounded-2xl border border-dashed border-primary-200 bg-white/80 p-4 text-sm text-primary-700">
-                Haven’t chatted lately? Say hi in your inbox to kick-start a new learning streak.
-              </div>
-            )}
-
-            <div className="mt-6 space-y-4">
-              {weeklyFocusDays.map((day) => (
-                <div
-                  key={day.label}
-                  className="flex items-center justify-between rounded-xl bg-white/80 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
-                >
-                  <span>{day.label} · {day.dayName}</span>
-                  <span className={`${day.colorClass} font-semibold`}>
-                    {day.status}
-                  </span>
                 </div>
               ))}
             </div>
