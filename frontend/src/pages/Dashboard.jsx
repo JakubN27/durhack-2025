@@ -626,7 +626,6 @@ export default function Dashboard() {
                       <div>
                         <p className="text-sm font-medium text-primary-600">Match Score · {score}%</p>
                         <h3 className="text-lg font-semibold text-slate-900">{partnerName}</h3>
-                        <p className="text-sm text-slate-500 capitalize">Status: {match.status || 'pending'}</p>
                       </div>
                       <button onClick={() => navigate('/view-matches')} className="btn-secondary sm:w-auto">
                         View Conversation

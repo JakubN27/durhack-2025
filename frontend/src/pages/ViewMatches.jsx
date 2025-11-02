@@ -119,7 +119,6 @@ export default function ViewMatches() {
                       />
                       <div className="flex-1 min-w-[180px]">
                         <p className="text-base font-semibold text-slate-900">{displayName}</p>
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Status: {match.status || 'pending'}</p>
                       </div>
                       <button
                         className="btn-primary"

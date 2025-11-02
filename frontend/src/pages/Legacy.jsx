@@ -183,6 +183,16 @@ export default function Legacy() {
     loadUserAndConnections();
   }, []);
 
+  // Calculate initial connections when graph data and current user are loaded
+  useEffect(() => {
+    if (graphData.nodes.length > 0 && currentUserId) {
+      const currentUserNode = graphData.nodes.find(node => node.id === currentUserId);
+      if (currentUserNode) {
+        calculateConnections(currentUserNode);
+      }
+    }
+  }, [graphData.nodes.length, currentUserId, calculateConnections]);
+
   const applyInitialView = useCallback(() => {
     const fg = graphRef.current;
     if (!fg) return;
