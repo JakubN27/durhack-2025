@@ -35,6 +35,16 @@ export default function Legacy() {
     setHighlightLinks(newHighlightLinks);
   }, [graphData.links]);
 
+  const fetchUserMatches = async (userId) => {
+    const response = await fetch(`http://localhost:3000/api/matching/user/${userId}`);
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    if (!data.success) return null;
+    
+    return data.matches || [];
+  };
+
   const loadUserAndConnections = async () => {
     try {
       setLoading(true);
@@ -50,49 +60,69 @@ export default function Legacy() {
 
       setUser(authUser);
 
-      // Fetch user's matches
-      const response = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Fetch current user's matches
+      const userMatches = await fetchUserMatches(authUser.id);
+      if (!userMatches) {
+        throw new Error('Failed to load user matches');
       }
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to load connections');
-      }
+      // Initialize data structures
+      const nodes = new Map();
+      const links = new Set();
+      const processedUsers = new Set();
 
-      // Transform matches into graph data
-      const nodes = new Set();
-      const links = [];
-      
-      // Add current user as first node
-      nodes.add(JSON.stringify({
-        id: authUser.id,
-        name: authUser.user_metadata?.full_name || 'You',
-        isCurrentUser: true
-      }));
+      // Helper function to add a node
+      const addNode = (user, isCurrentUser = false) => {
+        if (!user) return;
+        const nodeData = {
+          id: user.id,
+          name: user.name || 'Anonymous',
+          isCurrentUser
+        };
+        nodes.set(user.id, nodeData);
+      };
 
-      // Process matches
-      data.matches?.forEach(match => {
+      // Helper function to add a link
+      const addLink = (sourceId, targetId) => {
+        const linkKey = [sourceId, targetId].sort().join('-');
+        links.add({ source: sourceId, target: targetId, key: linkKey });
+      };
+
+      // Add current user
+      addNode({ 
+        id: authUser.id, 
+        name: authUser.user_metadata?.full_name || 'You'
+      }, true);
+
+      // Process initial matches
+      for (const match of userMatches) {
         const otherUser = match.user_a_id === authUser.id ? match.user_b : match.user_a;
+        addNode(otherUser);
+        addLink(authUser.id, otherUser.id);
+        processedUsers.add(otherUser.id);
+      }
+
+      // Fetch and process secondary connections
+      for (const userId of processedUsers) {
+        if (userId === authUser.id) continue;
         
-        // Add other user as node
-        nodes.add(JSON.stringify({
-          id: otherUser.id,
-          name: otherUser.name || 'Anonymous',
-          isCurrentUser: false
-        }));
+        const secondaryMatches = await fetchUserMatches(userId);
+        if (!secondaryMatches) continue;
 
-        // Add connection as link
-        links.push({
-          source: authUser.id,
-          target: otherUser.id
-        });
-      });
+        for (const match of secondaryMatches) {
+          const user1 = match.user_a;
+          const user2 = match.user_b;
+          
+          addNode(user1);
+          addNode(user2);
+          addLink(user1.id, user2.id);
+        }
+      }
 
+      // Transform data for ForceGraph2D
       setGraphData({
-        nodes: Array.from(nodes).map(n => JSON.parse(n)),
-        links
+        nodes: Array.from(nodes.values()),
+        links: Array.from(links).map(({ source, target }) => ({ source, target }))
       });
 
     } catch (err) {
