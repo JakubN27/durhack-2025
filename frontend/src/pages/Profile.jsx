@@ -8,7 +8,30 @@ const profileTips = [
   'Be honest about your learning edges. Reciprocal matches rely on it.',
 ]
 
-const categories = ['Programming', 'Frontend', 'Backend', 'Mobile', 'AI', 'Design', 'DevOps', 'Database', 'Cloud', 'Other']
+const skillTopics = [
+  'Programming',
+  'Web Development',
+  'Mobile Apps',
+  'Data Science',
+  'Cybersecurity',
+  'AI & Machine Learning',
+  'Cloud & DevOps',
+  'UI/UX Design',
+  'Graphic Design',
+  'Product Management',
+  'Business & Entrepreneurship',
+  'Marketing',
+  'Finance',
+  'Education & Teaching',
+  'Languages',
+  'Writing & Storytelling',
+  'Music',
+  'Performing Arts',
+  'Art & Crafts',
+  'Health & Wellness',
+  'Cooking & Culinary',
+  'Other',
+]
 const proficiencies = ['beginner', 'intermediate', 'advanced', 'expert']
 const personalityOptions = [
   { value: 'introvert', label: 'Introvert', emoji: '🧘' },
@@ -30,6 +53,27 @@ const formatLabel = (value = '') =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase())
 
+const defaultSkillTopic = 'Other'
+
+function findBestTopic(input) {
+  const query = input?.trim().toLowerCase()
+
+  if (!query) {
+    return null
+  }
+
+  const exactMatch = skillTopics.find((topic) => topic.toLowerCase() === query)
+  if (exactMatch) return exactMatch
+
+  const startsWithMatch = skillTopics.find((topic) => topic.toLowerCase().startsWith(query))
+  if (startsWithMatch) return startsWithMatch
+
+  const partialMatch = skillTopics.find((topic) => topic.toLowerCase().includes(query))
+  if (partialMatch) return partialMatch
+
+  return 'Other'
+}
+
 export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -46,14 +90,19 @@ export default function Profile() {
   })
   const [newTeachSkill, setNewTeachSkill] = useState({
     name: '',
-    category: categories[0],
+    category: defaultSkillTopic,
     proficiency: proficiencies[0],
   })
   const [newLearnSkill, setNewLearnSkill] = useState({
     name: '',
-    category: categories[0],
+    category: defaultSkillTopic,
     proficiency: proficiencies[0],
   })
+  const [teachCategoryInput, setTeachCategoryInput] = useState('')
+  const [learnCategoryInput, setLearnCategoryInput] = useState('')
+
+  const teachCategorySuggestion = useMemo(() => findBestTopic(teachCategoryInput), [teachCategoryInput])
+  const learnCategorySuggestion = useMemo(() => findBestTopic(learnCategoryInput), [learnCategoryInput])
 
   useEffect(() => {
     getProfile()
@@ -100,11 +149,19 @@ export default function Profile() {
       return
     }
 
+    const matchedCategory = teachCategorySuggestion || defaultSkillTopic
+    const skillToAdd = {
+      ...newTeachSkill,
+      category: matchedCategory,
+      name: newTeachSkill.name.trim(),
+    }
+
     setProfile((prev) => ({
       ...prev,
-      teach_skills: [...(prev.teach_skills || []), newTeachSkill],
+      teach_skills: [...(prev.teach_skills || []), skillToAdd],
     }))
-    setNewTeachSkill({ name: '', category: categories[0], proficiency: proficiencies[0] })
+  setNewTeachSkill({ name: '', category: defaultSkillTopic, proficiency: proficiencies[0] })
+  setTeachCategoryInput('')
     toast.success('Skill added! Remember to save your profile.')
   }
 
@@ -114,12 +171,54 @@ export default function Profile() {
       return
     }
 
+    const matchedCategory = learnCategorySuggestion || defaultSkillTopic
+    const skillToAdd = {
+      ...newLearnSkill,
+      category: matchedCategory,
+      name: newLearnSkill.name.trim(),
+    }
+
     setProfile((prev) => ({
       ...prev,
-      learn_skills: [...(prev.learn_skills || []), newLearnSkill],
+      learn_skills: [...(prev.learn_skills || []), skillToAdd],
     }))
-    setNewLearnSkill({ name: '', category: categories[0], proficiency: proficiencies[0] })
+  setNewLearnSkill({ name: '', category: defaultSkillTopic, proficiency: proficiencies[0] })
+  setLearnCategoryInput('')
     toast.success('Skill added! Remember to save your profile.')
+  }
+
+  const handleTeachCategoryInputChange = (value) => {
+    setTeachCategoryInput(value)
+    const matched = findBestTopic(value)
+    setNewTeachSkill((prev) => ({ ...prev, category: matched || defaultSkillTopic }))
+  }
+
+  const handleLearnCategoryInputChange = (value) => {
+    setLearnCategoryInput(value)
+    const matched = findBestTopic(value)
+    setNewLearnSkill((prev) => ({ ...prev, category: matched || defaultSkillTopic }))
+  }
+
+  const handleTeachCategoryBlur = () => {
+    const matched = findBestTopic(teachCategoryInput)
+    if (matched) {
+      setTeachCategoryInput(matched)
+      setNewTeachSkill((prev) => ({ ...prev, category: matched }))
+    } else {
+      setTeachCategoryInput('')
+      setNewTeachSkill((prev) => ({ ...prev, category: defaultSkillTopic }))
+    }
+  }
+
+  const handleLearnCategoryBlur = () => {
+    const matched = findBestTopic(learnCategoryInput)
+    if (matched) {
+      setLearnCategoryInput(matched)
+      setNewLearnSkill((prev) => ({ ...prev, category: matched }))
+    } else {
+      setLearnCategoryInput('')
+      setNewLearnSkill((prev) => ({ ...prev, category: defaultSkillTopic }))
+    }
   }
 
   const handleRemoveTeachSkill = (index) => {
@@ -351,7 +450,7 @@ export default function Profile() {
               </div>
             </div>
 
-            <aside className="card space-y-5">
+            <aside className="card space-y-4 self-start">
               <h2 className="text-xl font-semibold text-slate-900">Profile tips</h2>
               <ul className="space-y-4 text-sm text-slate-600">
                 {profileTips.map((tip) => (
@@ -379,25 +478,51 @@ export default function Profile() {
                     <input
                       type="text"
                       placeholder="Skill name (e.g., React)"
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newTeachSkill.name}
-                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewTeachSkill((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                     />
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-slate-600">
+                        Start typing to pick a topic. Unlisted skills will be saved as Other.
+                      </p>
+                      <input
+                        type="text"
+                        list="teach-skill-topics"
+                        placeholder="Topic (start typing...)"
+                        className={`${fieldInputClass} text-sm`}
+                        value={teachCategoryInput}
+                        onChange={(e) => handleTeachCategoryInputChange(e.target.value)}
+                        onBlur={handleTeachCategoryBlur}
+                      />
+                      <datalist id="teach-skill-topics">
+                        {skillTopics.map((topic) => (
+                          <option key={`teach-topic-${topic}`} value={topic} />
+                        ))}
+                      </datalist>
+                      {teachCategoryInput.trim() ? (
+                        <p className="mt-1 text-xs text-slate-600">
+                          Suggested topic{' '}
+                          <span className="font-semibold text-slate-800">
+                            {teachCategorySuggestion || defaultSkillTopic}
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
                     <select
-                      className={fieldInputClass}
-                      value={newTeachSkill.category}
-                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, category: e.target.value })}
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newTeachSkill.proficiency}
-                      onChange={(e) => setNewTeachSkill({ ...newTeachSkill, proficiency: e.target.value })}
+                      onChange={(e) =>
+                        setNewTeachSkill((prev) => ({
+                          ...prev,
+                          proficiency: e.target.value,
+                        }))
+                      }
                     >
                       {proficiencies.map((level) => (
                         <option key={level} value={level}>
@@ -456,25 +581,51 @@ export default function Profile() {
                     <input
                       type="text"
                       placeholder="Skill name (e.g., Python)"
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newLearnSkill.name}
-                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewLearnSkill((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                     />
+                    <div className="md:col-span-2">
+                      <p className="mb-1 text-xs text-slate-600">
+                        Start typing to pick a topic. Unlisted skills will be saved as Other.
+                      </p>
+                      <input
+                        type="text"
+                        list="learn-skill-topics"
+                        placeholder="Topic (start typing...)"
+                        className={`${fieldInputClass} text-sm`}
+                        value={learnCategoryInput}
+                        onChange={(e) => handleLearnCategoryInputChange(e.target.value)}
+                        onBlur={handleLearnCategoryBlur}
+                      />
+                      <datalist id="learn-skill-topics">
+                        {skillTopics.map((topic) => (
+                          <option key={`learn-topic-${topic}`} value={topic} />
+                        ))}
+                      </datalist>
+                      {learnCategoryInput.trim() ? (
+                        <p className="mt-1 text-xs text-slate-600">
+                          Suggested topic{' '}
+                          <span className="font-semibold text-slate-800">
+                            {learnCategorySuggestion || defaultSkillTopic}
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
                     <select
-                      className={fieldInputClass}
-                      value={newLearnSkill.category}
-                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, category: e.target.value })}
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className={fieldInputClass}
+                      className={`${fieldInputClass} text-sm`}
                       value={newLearnSkill.proficiency}
-                      onChange={(e) => setNewLearnSkill({ ...newLearnSkill, proficiency: e.target.value })}
+                      onChange={(e) =>
+                        setNewLearnSkill((prev) => ({
+                          ...prev,
+                          proficiency: e.target.value,
+                        }))
+                      }
                     >
                       {proficiencies.map((level) => (
                         <option key={level} value={level}>

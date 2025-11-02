@@ -75,10 +75,16 @@ export async function findMatches(userId, limit = 10, searchSkill = null) {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single()
-    
-    if (userError) throw userError
-    if (!user) throw new Error('User not found')
+      .maybeSingle()
+
+    if (userError && userError.code !== 'PGRST116') {
+      throw userError
+    }
+
+    if (!user) {
+      console.warn(`[Matching] No profile row for user ${userId}; returning empty matches`)
+      return []
+    }
     
     // Get all other users (don't require embeddings)
     const { data: allUsers, error: usersError } = await supabase
