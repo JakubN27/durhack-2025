@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 
@@ -6,6 +7,12 @@ const profileTips = [
   'Mention recent projects so the AI can surface mentors in the same lane.',
   'List specific topics you enjoy teaching - people love clarity.',
   'Be honest about your learning edges. Reciprocal matches rely on it.',
+]
+
+const matchMomentumChecklist = [
+  'Add at least three skills you can teach and three you want to learn.',
+  'Update your bio with fresh wins so mentors see your current focus.',
+  'Set your availability in the daily rhythm field to help with scheduling.',
 ]
 
 const skillTopics = [
@@ -404,9 +411,6 @@ export default function Profile() {
                   <h2 className="text-2xl font-semibold text-slate-900">Your story</h2>
                   <p className="mt-1 text-sm text-slate-600">What should the community know about you?</p>
                 </div>
-                <span className="rounded-full bg-primary-100/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-900">
-                  AI powered
-                </span>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -570,17 +574,34 @@ export default function Profile() {
               </div>
             </div>
 
-            <aside className="card space-y-4 self-start">
-              <h2 className="text-xl font-semibold text-slate-900">Profile tips</h2>
-              <ul className="space-y-4 text-sm text-slate-600">
-                {profileTips.map((tip) => (
-                  <li key={tip}>- {tip}</li>
-                ))}
-              </ul>
-              <button type="button" className="btn-secondary w-full text-sm" onClick={() => toast('Preview coming soon!')}>
-                Preview public profile
-              </button>
-            </aside>
+            <div className="space-y-6 self-start">
+              <aside className="card space-y-4">
+                <h2 className="text-xl font-semibold text-slate-900">Profile tips</h2>
+                <ul className="space-y-4 text-sm text-slate-600">
+                  {profileTips.map((tip) => (
+                    <li key={tip}>- {tip}</li>
+                  ))}
+                </ul>
+                <button type="button" className="btn-secondary w-full text-sm" onClick={() => toast('Preview coming soon!')}>
+                  Preview public profile
+                </button>
+              </aside>
+
+              <div className="card space-y-4">
+                <h2 className="text-xl font-semibold text-slate-900">Match momentum</h2>
+                <p className="text-sm text-slate-600">
+                  Quick tune-ups that help your profile surface in the best partner searches.
+                </p>
+                <ul className="space-y-3 text-sm text-slate-600">
+                  {matchMomentumChecklist.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+                <Link to="/matches" className="btn-primary w-full text-center text-sm">
+                  Match now
+                </Link>
+              </div>
+            </div>
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
@@ -650,7 +671,11 @@ export default function Profile() {
                         </option>
                       ))}
                     </select>
-                    <button type="button" onClick={handleAddTeachSkill} className="btn-primary">
+                    <button
+                      type="button"
+                      onClick={handleAddTeachSkill}
+                      className="btn-primary w-full md:col-span-4"
+                    >
                       + Add
                     </button>
                   </div>
@@ -753,7 +778,11 @@ export default function Profile() {
                         </option>
                       ))}
                     </select>
-                    <button type="button" onClick={handleAddLearnSkill} className="btn-primary">
+                    <button
+                      type="button"
+                      onClick={handleAddLearnSkill}
+                      className="btn-primary w-full md:col-span-4"
+                    >
                       + Add
                     </button>
                   </div>

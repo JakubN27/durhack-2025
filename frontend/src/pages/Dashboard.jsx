@@ -262,7 +262,7 @@ export default function Dashboard() {
               <button onClick={() => navigate('/conversations')} className="btn-secondary w-full">
                 💬 My Conversations
               </button>
-              <button onClick={() => navigate('/matches')} className="btn-secondary w-full">
+              <button onClick={() => navigate('/view-matches')} className="btn-secondary w-full">
                 👥 View All Matches
               </button>
             </div>
@@ -317,7 +317,7 @@ export default function Dashboard() {
                 Peek at the latest connections the AI lined up for you.
               </p>
             </div>
-            <button onClick={() => navigate('/matches')} className="btn-primary sm:w-auto">
+            <button onClick={() => navigate('/view-matches')} className="btn-primary sm:w-auto">
               Manage Matches
             </button>
           </div>
@@ -344,7 +344,7 @@ export default function Dashboard() {
                         <h3 className="text-lg font-semibold text-slate-900">{partnerName}</h3>
                         <p className="text-sm text-slate-500 capitalize">Status: {match.status || 'pending'}</p>
                       </div>
-                      <button onClick={() => navigate('/matches')} className="btn-secondary sm:w-auto">
+                      <button onClick={() => navigate('/view-matches')} className="btn-secondary sm:w-auto">
                         View Conversation
                       </button>
                     </div>

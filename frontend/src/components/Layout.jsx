@@ -15,8 +15,9 @@ export default function Layout({ session }) {
   }
 
   const authedLinks = [
-    { to: '/dashboard', label: 'Dashboard' },
-    { to: '/matches', label: 'Matches' },
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/matches', label: 'Match now' },
+    { to: '/view-matches', label: 'View Matches' },
     { to: '/conversations', label: '💬 Conversations' },
     { to: '/profile', label: 'Profile' },
   ]
@@ -61,12 +62,6 @@ export default function Layout({ session }) {
             <div className="flex items-center gap-3">
               {session ? (
                 <>
-                  <Link
-                    to="/matches"
-                    className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-primary-100 hover:text-primary-200"
-                  >
-                    View Matches
-                  </Link>
                   <button onClick={handleSignOut} className="btn-ghost">
                     Sign Out
                   </button>
@@ -118,7 +113,8 @@ export default function Layout({ session }) {
             <p className="font-semibold text-white mb-2">Explore</p>
             <ul className="space-y-2">
               <li><Link to="/dashboard" className="hover:text-primary-200">Dashboard</Link></li>
-              <li><Link to="/matches" className="hover:text-primary-200">Matches</Link></li>
+              <li><Link to="/matches" className="hover:text-primary-200">Match now</Link></li>
+              <li><Link to="/view-matches" className="hover:text-primary-200">View Matches</Link></li>
               <li><Link to="/profile" className="hover:text-primary-200">Profile</Link></li>
             </ul>
           </div>
