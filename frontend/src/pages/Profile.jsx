@@ -84,9 +84,11 @@ function findBestTopic(input) {
 export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [profile, setProfile] = useState({
     name: '',
     bio: '',
+    avatar_url: '',
     teach_skills: [],
     learn_skills: [],
     favorite_ice_cream: '',
@@ -131,6 +133,7 @@ export default function Profile() {
         setProfile((prev) => ({
           ...prev,
           ...result.data,
+          avatar_url: result.data.avatar_url || '',
           teach_skills: result.data.teach_skills || [],
           learn_skills: result.data.learn_skills || [],
           favorite_ice_cream: result.data.favorite_ice_cream || '',
@@ -286,6 +289,75 @@ export default function Profile() {
     }
   }
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB')
+      return
+    }
+
+    try {
+      setUploadingImage(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Not authenticated')
+        return
+      }
+
+      // Create unique file name
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath)
+
+      // Update profile with new avatar URL
+      setProfile((prev) => ({
+        ...prev,
+        avatar_url: publicUrl
+      }))
+
+      toast.success('Profile picture uploaded! Remember to save your profile.')
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error('Failed to upload image')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setProfile((prev) => ({
+      ...prev,
+      avatar_url: ''
+    }))
+    toast.success('Profile picture removed! Remember to save your profile.')
+  }
+
   const profileCompletion = useMemo(() => {
     const fields = [profile.name, profile.bio, profile.teach_skills?.length, profile.learn_skills?.length]
     const completed = fields.filter((field) => {
@@ -352,6 +424,54 @@ export default function Profile() {
                     placeholder="How should others call you?"
                     required
                   />
+                </div>
+
+                {/* Profile Picture Upload Section */}
+                <div className="md:col-span-2">
+                  <label className={fieldLabelClass}>Profile Picture</label>
+                  <div className="flex items-start gap-6">
+                    {/* Current Avatar */}
+                    <div className="relative">
+                      <img
+                        src={profile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&size=200`}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-primary-200"
+                      />
+                      {uploadingImage && (
+                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload Controls */}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex gap-3">
+                        <label className="btn-primary cursor-pointer text-center">
+                          {uploadingImage ? 'Uploading...' : 'Upload Photo'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                            className="hidden"
+                          />
+                        </label>
+                        {profile.avatar_url && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <p className={helperTextClass}>
+                        JPG, PNG or GIF. Max size 5MB. Your profile picture helps others recognize you.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">

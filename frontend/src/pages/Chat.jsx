@@ -250,7 +250,7 @@ export default function Chat() {
                 <img
                   src={otherUser?.avatar_url || `https://ui-avatars.com/api/?name=${otherUser?.name}&size=200`}
                   alt={otherUser?.name}
-                  className="w-24 h-24 rounded-full mx-auto mb-3 ring-4 ring-primary-100"
+                  className="w-24 h-24 rounded-full object-cover mx-auto mb-3 ring-4 ring-primary-100"
                 />
                 <h3 className="text-xl font-bold text-slate-900">{otherUser?.name}</h3>
                 {otherUser?.bio && (
