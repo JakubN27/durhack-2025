@@ -12,6 +12,7 @@ import Chat from './pages/Chat'
 import Conversations from './pages/Conversations'
 import Dashboard from './pages/Dashboard'
 import Debug from './pages/Debug'
+import Legacy from './pages/Legacy'
 import ViewMatches from './pages/ViewMatches'
 
 function App() {
@@ -112,6 +113,10 @@ function App() {
           <Route
             path="debug"
             element={session ? <Debug /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="legacy"
+            element={session ? <Legacy /> : <Navigate to="/login" />}
           />
         </Route>
       </Routes>

@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.45.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-force-graph-2d": "^1.29.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.26.2",
     "talkjs": "^0.42.1"

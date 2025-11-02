@@ -12,6 +12,7 @@ import { achievementsRouter } from './routes/achievements.js'
 import { aiRouter } from './routes/ai.js'
 import { chatRouter } from './routes/chat.js'
 import { notificationsRouter } from './routes/notifications.js'
+import { networkRouter } from './routes/network.js'
 
 dotenv.config()
 
@@ -71,6 +72,7 @@ app.use('/api/ai', aiRouter)
 app.use('/api/embeddings', embeddingsRouter)
 app.use('/api/chat', chatRouter)
 app.use('/api/notifications', notificationsRouter)
+app.use('/api/network', networkRouter)
 
 // 404 handler
 app.use((req, res) => {

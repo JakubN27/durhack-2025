@@ -19,6 +19,7 @@ export default function Layout({ session }) {
   { to: '/matches', label: 'Match now' },
     { to: '/view-matches', label: 'View Matches' },
     { to: '/conversations', label: '💬 Conversations' },
+    { to: '/legacy', label: '🌳 Legacy' },
     { to: '/profile', label: 'Profile' },
   ]
 
