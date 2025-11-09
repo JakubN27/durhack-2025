@@ -472,7 +472,7 @@ export async function createMatch(userAId, userBId, score, mutualSkills) {
  * Get user's matches with recalculated scores
  * This ensures scores always reflect the current state of user profiles
  */
-export async function getUserMatches(userId) {
+export async function getUserMatches(userId, includeAI = false) {
   try {
     const { data, error } = await supabase
       .from('matches')
@@ -490,7 +490,20 @@ export async function getUserMatches(userId) {
       return []
     }
     
-    // Process matches in parallel batches for better performance
+    // If AI is disabled, return matches with basic scores only
+    if (!includeAI) {
+      return data.map(match => {
+        const isUserA = match.user_a?.id === userId
+        const otherUser = isUserA ? match.user_b : match.user_a
+        
+        return {
+          ...match,
+          other_user: otherUser
+        }
+      })
+    }
+    
+    // Process matches in parallel batches for better performance (AI enabled)
     const BATCH_SIZE = 5 // Process 5 matches at a time
     const matchesWithUpdatedScores = []
     

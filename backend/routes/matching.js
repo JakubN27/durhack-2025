@@ -59,12 +59,14 @@ matchingRouter.post('/create', async (req, res) => {
 /**
  * GET /api/matching/user/:userId
  * Get all matches for a user
+ * Query param: includeAI=true to enable AI analysis (slower)
  */
 matchingRouter.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params
+    const includeAI = req.query.includeAI === 'true'
     
-    const matches = await getUserMatches(userId)
+    const matches = await getUserMatches(userId, includeAI)
     
     res.json({
       success: true,
