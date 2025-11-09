@@ -1,5 +1,0 @@
-"# DEPRECATED: pnpm workspace file. This repository has been migrated to npm workspaces.
-# The file is left here for historical reasons. You can safely delete it if you
-# are sure no pnpm tooling depends on it. The canonical workspace config is
-# defined in package.json under the "workspaces" field for npm.
-"
