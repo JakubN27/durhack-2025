@@ -39,12 +39,17 @@ usersRouter.get('/', async (req, res) => {
 usersRouter.get('/:userId', async (req, res) => {
   try {
     const { userId } = req.params
+    
+    console.log(`[Users] Fetching user ${userId}`)
+    const startTime = Date.now()
 
     const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .single()
+    
+    console.log(`[Users] Query took ${Date.now() - startTime}ms`)
 
     // If user doesn't exist (PGRST116), return empty profile structure
     if (error && error.code === 'PGRST116') {
