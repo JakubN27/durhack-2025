@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" --names \"backend,frontend\" --prefix-colors \"bgBlue.bold,bgMagenta.bold\"",
-  "dev:backend": "node --watch api/backend/start.js",
+  "dev:backend": "node --watch api/start.js",
   "dev:frontend": "vite",
   "build": "vite build",
   "preview": "vite preview",
-  "start": "node api/backend/start.js",
-  "seed": "npm --prefix api/backend run seed",
+  "start": "node api/start.js",
+  "seed": "npm --prefix api run seed",
   "clean": "rm -rf node_modules frontend/node_modules backend/node_modules",
     "fresh-install": "npm run clean && npm install",
     "info": "echo '\n✨ SkillSwap Workspace Info\n' && echo '📦 Packages:' && echo \"  Root: $(ls node_modules 2>/dev/null | wc -l | xargs) packages\" && echo \"  Frontend: (moved to repo root)\" && echo \"  Backend: $(ls backend/node_modules 2>/dev/null | wc -l | xargs) packages\" && echo '\n🚀 Run: npm run dev' && echo '📚 Docs: See SETUP_COMPLETE.md\n'"
