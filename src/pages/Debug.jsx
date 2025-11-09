@@ -35,7 +35,7 @@ export default function Debug() {
       
       // 2. Check user profile
       try {
-        const userResponse = await fetch(`http://localhost:3000/api/users/${authUser.id}`)
+        const userResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/users/${authUser.id}`)
         const userData = await userResponse.json()
         results.profile = userData.success ? userData.data : { error: userData.error }
       } catch (err) {
@@ -44,7 +44,7 @@ export default function Debug() {
       
       // 3. Check matches
       try {
-        const matchResponse = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
+        const matchResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/user/${authUser.id}`)
         const matchData = await matchResponse.json()
         results.matches = matchData.success ? {
           count: matchData.count,
@@ -56,7 +56,7 @@ export default function Debug() {
       
       // 4. Check conversations
       try {
-        const convResponse = await fetch(`http://localhost:3000/api/chat/conversations/${authUser.id}`)
+        const convResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/chat/conversations/${authUser.id}`)
         const convData = await convResponse.json()
         results.conversations = convData.success ? {
           count: convData.count,

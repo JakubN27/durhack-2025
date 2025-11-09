@@ -29,7 +29,7 @@ export default function Conversations() {
       setUser(authUser)
       
       // Use the matching API to get all matches (simpler and more reliable)
-      const response = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/user/${authUser.id}`)
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)

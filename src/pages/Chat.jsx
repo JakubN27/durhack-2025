@@ -38,7 +38,7 @@ export default function Chat() {
       }
       
       // Get user profile
-      const userResponse = await fetch(`http://localhost:3000/api/users/${authUser.id}`)
+      const userResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/users/${authUser.id}`)
       const userData = await userResponse.json()
       
       if (!userData.success) {
@@ -48,7 +48,7 @@ export default function Chat() {
       setUser(userData.data)
       
       // Get match details
-      const matchResponse = await fetch(`http://localhost:3000/api/matching/${matchId}`)
+      const matchResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/${matchId}`)
       const matchData = await matchResponse.json()
       
       if (!matchData.success) {
@@ -85,7 +85,7 @@ export default function Chat() {
       
       // Mark messages as read when user opens chat
       try {
-        await fetch(`http://localhost:3000/api/chat/mark-read/${matchId}`, {
+        await fetch(`${import.meta.env.VITE_API_URL || ""}/api/chat/mark-read/${matchId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

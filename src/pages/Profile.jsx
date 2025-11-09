@@ -126,7 +126,7 @@ export default function Profile() {
         return
       }
 
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/users/${user.id}`)
       const result = await response.json()
 
       if (result.success && result.data) {
@@ -265,7 +265,7 @@ export default function Profile() {
         learn_skills: profile.learn_skills || [],
       }
 
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

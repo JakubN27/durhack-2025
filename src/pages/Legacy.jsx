@@ -115,7 +115,7 @@ export default function Legacy() {
       setHoveredNode(authUser.id);
 
       // Fetch network data with one optimized query
-      const response = await fetch(`http://localhost:3000/api/network/${authUser.id}?depth=3`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/network/${authUser.id}?depth=3`);
       if (!response.ok) {
         throw new Error('Failed to load network data');
       }

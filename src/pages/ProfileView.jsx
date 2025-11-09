@@ -29,7 +29,7 @@ export default function ProfileView() {
       }
 
       // Fetch profile data
-      const response = await fetch(`http://localhost:3000/api/users/${targetUserId}`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/users/${targetUserId}`)
       const result = await response.json()
 
       if (result.success && result.data) {
@@ -51,7 +51,7 @@ export default function ProfileView() {
   const loadStats = async (userId) => {
     try {
       // Get matches count
-      const matchesResponse = await fetch(`http://localhost:3000/api/matching/user/${userId}`)
+      const matchesResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/user/${userId}`)
       const matchesResult = await matchesResponse.json()
       
       const matchesCount = matchesResult.success ? matchesResult.count || 0 : 0

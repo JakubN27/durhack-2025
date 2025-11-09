@@ -34,7 +34,7 @@ export default function Matches() {
     setSearching(true)
     try {
       // Build URL with optional skill parameter
-      let url = `http://localhost:3000/api/matching/find/${userId}?limit=20`
+      let url = `${import.meta.env.VITE_API_URL || ""}/api/matching/find/${userId}?limit=20`
       if (skill) {
         url += `&skill=${encodeURIComponent(skill)}`
       }
@@ -60,7 +60,7 @@ export default function Matches() {
 
   const handleCreateMatch = async (matchData) => {
     try {
-      const response = await fetch('http://localhost:3000/api/matching/create', {
+      const response = await fetch('', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

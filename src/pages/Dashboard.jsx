@@ -51,14 +51,14 @@ export default function Dashboard() {
 
       if (!authUser) return
 
-      const profileResponse = await fetch(`http://localhost:3000/api/users/${authUser.id}`)
+      const profileResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/users/${authUser.id}`)
       const profileResult = await profileResponse.json()
 
       if (profileResult.success && profileResult.data) {
         setProfile(profileResult.data)
       }
 
-      const matchResponse = await fetch(`http://localhost:3000/api/matching/user/${authUser.id}`)
+      const matchResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/user/${authUser.id}`)
       const matchData = await matchResponse.json()
       if (matchData.success) {
         setMatches(matchData.matches || [])
@@ -76,7 +76,7 @@ export default function Dashboard() {
   const loadChatActivity = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/chat/conversations/${userId}?status=all&limit=100`
+        `${import.meta.env.VITE_API_URL || ""}/api/chat/conversations/${userId}?status=all&limit=100`
       )
 
       if (!response.ok) {
@@ -148,7 +148,7 @@ export default function Dashboard() {
 
     setSearching(true)
     try {
-      const response = await fetch(`http://localhost:3000/api/matching/find/${user.id}`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/find/${user.id}`)
       const data = await response.json()
 
       if (data.success && data.matches?.length > 0) {

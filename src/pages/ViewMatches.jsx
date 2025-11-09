@@ -38,7 +38,7 @@ export default function ViewMatches() {
   const fetchCurrentMatches = async (userId) => {
     try {
       setRefreshing(true)
-      const response = await fetch(`http://localhost:3000/api/matching/user/${userId}`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/matching/user/${userId}`)
       const data = await response.json()
 
       if (data.success) {

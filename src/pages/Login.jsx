@@ -59,7 +59,7 @@ export default function Login() {
         } else {
           // Create user profile in the database via backend API
           try {
-            const response = await fetch('http://localhost:3000/api/users', {
+            const response = await fetch('', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
