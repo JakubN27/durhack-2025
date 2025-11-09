@@ -1,0 +1,9 @@
+# Ignore all API files except the entry point
+api/**/*.js
+!api/index.js
+
+# But still include dependencies for the function to work
+!api/server.js
+!api/config/**
+!api/routes/**
+!api/services/**
