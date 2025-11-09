@@ -3,26 +3,41 @@
   "version": "1.0.0",
   "description": "SkillSwap - AI-powered peer-to-peer learning platform",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
+  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" --names \"backend,frontend\" --prefix-colors \"bgBlue.bold,bgMagenta.bold\"",
-    "dev:backend": "npm run dev --workspace=backend",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "build": "npm run build --workspace=frontend",
-    "start": "npm start --workspace=backend",
-    "seed": "npm run seed --workspace=backend",
-    "clean": "rm -rf node_modules frontend/node_modules backend/node_modules",
+    "dev:backend": "node --watch backend/start.js",
+  "dev:frontend": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+    "start": "node backend/start.js",
+    "seed": "npm --prefix backend run seed",
+  "clean": "rm -rf node_modules frontend/node_modules backend/node_modules",
     "fresh-install": "npm run clean && npm install",
-    "info": "echo '\n✨ SkillSwap Workspace Info\n' && echo '📦 Packages:' && echo \"  Root: $(ls node_modules 2>/dev/null | wc -l | xargs) packages\" && echo \"  Frontend: $(ls frontend/node_modules 2>/dev/null | wc -l | xargs) packages\" && echo \"  Backend: $(ls backend/node_modules 2>/dev/null | wc -l | xargs) packages\" && echo '\n🚀 Run: npm run dev' && echo '📚 Docs: See SETUP_COMPLETE.md\n'"
+    "info": "echo '\n✨ SkillSwap Workspace Info\n' && echo '📦 Packages:' && echo \"  Root: $(ls node_modules 2>/dev/null | wc -l | xargs) packages\" && echo \"  Frontend: (moved to repo root)\" && echo \"  Backend: $(ls backend/node_modules 2>/dev/null | wc -l | xargs) packages\" && echo '\n🚀 Run: npm run dev' && echo '📚 Docs: See SETUP_COMPLETE.md\n'"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "vite": "^7.1.7",
+    "@vitejs/plugin-react": "^5.0.4",
+    "tailwindcss": "^3.4.14",
+    "postcss": "^8.4.47",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.36.0"
   },
   "dependencies": {
     "@talkjs/react-components": "^0.0.27",
-    "talkjs": "^0.42.1"
+    "talkjs": "^0.42.1",
+    "@supabase/supabase-js": "^2.45.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-force-graph-2d": "^1.29.0",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^6.26.2",
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "serverless-http": "^3.0.0"
   }
 }

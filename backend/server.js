@@ -85,8 +85,5 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' })
 })
 
-app.listen(PORT, () => {
-  console.log(`🚀 SkillSwap API running on http://localhost:${PORT}`)
-  console.log(`📚 API Documentation: http://localhost:${PORT}`)
-  console.log(`❤️  Health check: http://localhost:${PORT}/health`)
-})
+// Export the express app for serverless adapters (Vercel) and local starters
+export default app

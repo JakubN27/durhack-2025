@@ -301,5 +301,15 @@ The project is well-documented, feature-complete, and ready for development or d
 
 ---
 
+## 🔧 Recent Repository Reorganization (Nov 9, 2025)
+
+- Migrated frontend into repository root (Vite + React) to simplify Vercel deployment.
+- Added `api/[...slug].js` serverless wrapper so backend Express routes are available under `/api/*` on Vercel using `serverless-http`.
+- Added `vercel.json` with build and routing configuration for a single Vercel project.
+- Merged frontend/backend scripts and dependencies into the root `package.json` and removed pnpm files (repo now uses npm).
+- Added a local `backend/start.js` file for local development (runs the Express app with node).
+
+If you need to revert the move, check the commit history or reach out and I can restore the previous layout.
+
 **Status:** ✅ Ready for development/demo  
 **Last Verified:** November 2, 2025

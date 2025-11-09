@@ -9,7 +9,7 @@
 Before you begin, ensure you have:
 
 - **Node.js 22+** (or 20.19+) - [Download](https://nodejs.org/)
-- **npm** or **pnpm** - Package manager
+- **npm** - Package manager
 - **Git** - Version control
 - **Code Editor** - VS Code recommended
 - **Supabase Account** - [Sign up free](https://supabase.com)
